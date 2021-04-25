@@ -16,26 +16,26 @@ INFO_SIZE_W   = 4 # INFO欄横幅のタイル数
 BUTTON_SIZE_H = 1 # ボタン縦幅のタイル数
 BUTTON_SIZE_W = 4 # ボタン横幅のタイル数
 
-
 # タイルステータスの定義
 EMPTY = 0
 BLACK = 1
 WHITE = 2
 
-
 # pygameの初期化
 pygame.init()
 
-
-# 反対の色を返す関数
+################################################################
+## 関数：反対の色を返す
+################################################################
 def reverse_color(c):
 	if c == BLACK:
 		return WHITE
 	if c == WHITE:
 		return BLACK
 
-
-# 石の反転
+################################################################
+## 関数：石の反転
+################################################################
 def reverse_stone(board_status, turn_player, pos, dir):
 	board_shape = np.array(board_status).shape
 	board_len_y, board_len_x = board_shape[0], board_shape[1]
@@ -71,8 +71,9 @@ def reverse_stone(board_status, turn_player, pos, dir):
 	
 	return
 
-
-# 石の設置
+################################################################
+## 関数：石の設置
+################################################################
 def set_stone(board_status, turn_player, pos):
 	pos_x, pos_y = pos[0], pos[1]
 	
@@ -104,8 +105,9 @@ def set_stone(board_status, turn_player, pos):
 	else:
 		return turn_player
 
-
-# メイン関数
+################################################################
+## メイン関数
+################################################################
 def main():
 	
 	# 各種サーフェイスのサイズ指定
@@ -263,8 +265,9 @@ def main():
 		pygame.display.update()
 		fpsclock.tick(FPS)
 
-
-# 実行
+################################################################
+## メイン関数の実行
+################################################################
 if __name__ == '__main__':
 	main()
 	
