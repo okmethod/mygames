@@ -1,32 +1,23 @@
 import sys
+import random
 from math import floor
 from random import randint
 import pygame
 from pygame.locals import QUIT, MOUSEBUTTONDOWN
 
-# 固定値設定
-FPS       = 15
-FONT_SIZE = 24
-TILE_SIZE = 50
-BOARD_SIZE    = 8 # ボードの1辺のタイル数(偶数推奨)
-INFO_SIZE_H   = 4 # INFO欄縦幅のタイル数
-INFO_SIZE_W   = 4 # INFO欄横幅のタイル数
-BUTTON_SIZE_H = 1 # ボタン縦幅のタイル数
-BUTTON_SIZE_W = 4 # ボタン横幅のタイル数
-
 # pygameの初期化
 pygame.init()
 pygame.mixer.init()
+fpsclock  = pygame.time.Clock()
 
 # 外部ファイルのロード
 sound_set   = pygame.mixer.Sound('media\Windows Navigation Start.wav')
 sound_error = pygame.mixer.Sound('media\Windows Critical Stop.wav')
-sound_end   = pygame.mixer.Sound('media\Windows Error.wav')
 
 ################################################################
-## クラス：リバーシのゲーム状態を管理する
+## リバーシのルール/状態を管理するクラス
 ################################################################
-class GameStateReversi:
+class GameModelReversi:
 	##public## クラス定数
 	EMPTY = -1
 	BLACK = 0
@@ -46,7 +37,11 @@ class GameStateReversi:
 		self.__end_flg  = False
 		# 初期配置の石を設置
 		self.__init_board()
-		
+	
+	##public## getter：ボードサイズを取得する
+	def get_board_size(self):
+		return [self.__board_len_x, self.__board_len_y]
+	
 	##public## getter：反対の色を取得する
 	def get_reverse_color(self, c):
 		if c == self.BLACK:
@@ -83,7 +78,7 @@ class GameStateReversi:
 	def get_end_flg(self):
 		return self.__end_flg
 	
-	##private## 管理コマンド：空の状態のボードに初期配置を設定する
+	##private## 内部メソッド：空の状態のボードに初期配置の石を設定する
 	def __init_board(self):
 		self.__board_state[self.__board_len_y//2][self.__board_len_x//2]     = self.WHITE
 		self.__board_state[self.__board_len_y//2][self.__board_len_x//2-1]   = self.BLACK
@@ -92,11 +87,11 @@ class GameStateReversi:
 		self.__player_data[self.BLACK]['stone_count'] = 2
 		self.__player_data[self.WHITE]['stone_count'] = 2
 	
-	##private## 管理コマンド：アクティブプレイヤーを交代する
+	##private## 内部メソッド：アクティブプレイヤーを交代する
 	def __change_turn(self):
 		self.__active_player = self.get_reverse_color(self.__active_player)
 	
-	##private## 管理コマンド：勝利プレイヤーを判定する
+	##private## 内部メソッド：勝利プレイヤーを判定する
 	def __decide_winner_player(self):
 		if self.get_stone_count(self.BLACK) > self.get_stone_count(self.WHITE):
 			self.__winner_player = self.BLACK
@@ -105,7 +100,7 @@ class GameStateReversi:
 		else:
 			self.__winner_player = None
 	
-	##private## 管理コマンド：石を反転する(またはシミュレーションする)
+	##private## 内部メソッド：石を反転する(またはシミュレーションする)
 	def __reverse_stone(self, pos, dir, update_flg):
 		pos_x, pos_y  = pos[0], pos[1]
 		dir_x, dir_y  = dir[0], dir[1]
@@ -144,7 +139,7 @@ class GameStateReversi:
 		
 		return False
 	
-	##private## 管理コマンド：指定位置が有効手かどうかを判定する
+	##private## 内部メソッド：指定位置が有効手かどうかを判定する
 	def __validate_set_pos(self, pos):
 		pos_x, pos_y = pos[0], pos[1]
 		
@@ -288,193 +283,315 @@ class GameStateReversi:
 
 
 ################################################################
-## メイン関数：pygameによる画面描画
+## ユーザからの入力イベントを受け付けるクラス
 ################################################################
-def main():
+class UserEventControllerReversi:
 	
-	# 各種サーフェイスのサイズ指定
-	board_sfc       = pygame.Surface((TILE_SIZE * BOARD_SIZE, TILE_SIZE * BOARD_SIZE))
-	info_sfc        = pygame.Surface((TILE_SIZE * INFO_SIZE_W , TILE_SIZE * INFO_SIZE_H))
-	pass_btn_sfc    = pygame.Surface((TILE_SIZE * BUTTON_SIZE_W  , TILE_SIZE * BUTTON_SIZE_H))
-	giveup_btn_sfc  = pygame.Surface((TILE_SIZE * BUTTON_SIZE_W  , TILE_SIZE * BUTTON_SIZE_H))
-	rematch_btn_sfc = pygame.Surface((TILE_SIZE * BUTTON_SIZE_W  , TILE_SIZE * BUTTON_SIZE_H))
+	##private## コンストラクタ
+	def __init__(self, obj, rect_dict, tile_size):
+		self.__game_model = obj
+		self.__rect_dict  = rect_dict
+		self.__tile_size  = tile_size
 	
-	# 各種サーフェイスの位置指定
-	board_sfc_topleft       = (0, 0)
-	info_sfc_topleft        = (board_sfc.get_width(), 0)
-	pass_btn_sfc_topleft    = (board_sfc.get_width(), info_sfc.get_height())
-	giveup_btn_sfc_topleft  = (board_sfc.get_width(), info_sfc.get_height() + pass_btn_sfc.get_height())
-	rematch_btn_sfc_topleft = (board_sfc.get_width(), info_sfc.get_height() + pass_btn_sfc.get_height() + giveup_btn_sfc.get_height())
+	##private## 内部メソッド：指定位置が範囲内かどうかを判定する
+	def __validate_within_rect(self, specified_pos, rect_pos):
+		if (rect_pos['x'] < specified_pos[0] < rect_pos['x']+rect_pos['w']) and \
+		   (rect_pos['y'] < specified_pos[1] < rect_pos['y']+rect_pos['h']):
+			return True
+		else:
+			return False
 	
-	# 描画系の初期設定
-	main_screen_width  = board_sfc.get_width() + info_sfc.get_width()
-	main_screen_height = max([board_sfc.get_height(), info_sfc.get_height() + pass_btn_sfc.get_height() + giveup_btn_sfc.get_height() + rematch_btn_sfc.get_height()])
-	main_screen = pygame.display.set_mode([main_screen_width, main_screen_height])
-	fpsclock  = pygame.time.Clock()
-	smallfont = pygame.font.SysFont(None, FONT_SIZE)
-	largefont = pygame.font.SysFont(None, FONT_SIZE*2)
+	##private## 内部メソッド：アクションの結果を出力する
+	def __output_reaction(self, result_dict):
+		if result_dict['is_valid']:
+			print_str = 'Action is valid : ' + result_dict['description']
+			sound_set.play()
+		else:
+			print_str = 'Action is invalid : ' + result_dict['description']
+			sound_error.play()
+		print(print_str)
 	
-	# ゲームの状態を保持するオブジェクト
-	game_state = GameStateReversi(BOARD_SIZE)
-	
-	#### 画面描画ループ
-	while True:
-		
-		#### 入力イベント
+	##public## ユーザからの入力イベントを受け付ける
+	def control_event(self):
 		for event in pygame.event.get():
+			
 			# 閉じるボタンクリック
 			if event.type == QUIT:
 				pygame.quit()
 				sys.exit()
+			
 			# 左クリック
 			if event.type == MOUSEBUTTONDOWN and event.button == 1:
 				# クリック位置がボード内の場合
-				if (board_sfc_topleft[0] < event.pos[0] < board_sfc_topleft[0]+board_sfc.get_width()) and \
-				   (board_sfc_topleft[1] < event.pos[1] < board_sfc_topleft[1]+board_sfc.get_height()):
-					pos_x = floor(event.pos[0] / TILE_SIZE)
-					pos_y = floor(event.pos[1] / TILE_SIZE)
+				if self.__validate_within_rect(event.pos, self.__rect_dict['board_area']):
+					# クリック位置からタイル座標を特定
+					pos_x = floor(event.pos[0] / self.__tile_size)
+					pos_y = floor(event.pos[1] / self.__tile_size)
 					# プレイヤーアクション：石を設置する
-					result_dict = game_state.action_set_stone([pos_x, pos_y])
-					if result_dict['is_valid']:
-						print_str = 'Action is valid : ' + result_dict['description']
-						sound_set.play()
-					else:
-						print_str = 'Action is invalid : ' + result_dict['description']
-						sound_error.play()
-					print(print_str)
+					result_dict = self.__game_model.action_set_stone([pos_x, pos_y])
+					self.__output_reaction(result_dict)
+				
 				# クリック位置がpassボタン内の場合
-				if (pass_btn_sfc_topleft[0] < event.pos[0]) and (event.pos[0] < pass_btn_sfc_topleft[0]+pass_btn_sfc.get_width()) and \
-				   (pass_btn_sfc_topleft[1] < event.pos[1]) and (event.pos[1] < pass_btn_sfc_topleft[1]+pass_btn_sfc.get_height()):
+				if self.__validate_within_rect(event.pos, self.__rect_dict['pass_button_area']):
 					# プレイヤーアクション：パスする
-					result_dict = game_state.action_pass()
-					if result_dict['is_valid']:
-						print_str = 'Action is valid : ' + result_dict['description']
-						sound_set.play()
-					else:
-						print_str = 'Action is invalid : ' + result_dict['description']
-						sound_error.play()
-					print(print_str)
+					result_dict = self.__game_model.action_pass()
+					self.__output_reaction(result_dict)
+				
 				# クリック位置がgiveupボタン内の場合
-				if (giveup_btn_sfc_topleft[0] < event.pos[0]) and (event.pos[0] < giveup_btn_sfc_topleft[0]+giveup_btn_sfc.get_width()) and \
-				   (giveup_btn_sfc_topleft[1] < event.pos[1]) and (event.pos[1] < giveup_btn_sfc_topleft[1]+giveup_btn_sfc.get_height()):
+				if self.__validate_within_rect(event.pos, self.__rect_dict['giveup_button_area']):
 					# プレイヤーアクション：投了する
-					result_dict = game_state.action_give_up()
-					if result_dict['is_valid']:
-						print_str = 'Action is valid : ' + result_dict['description']
-						sound_set.play()
-					else:
-						print_str = 'Action is invalid : ' + result_dict['description']
-						sound_error.play()
-					print(print_str)
+					result_dict = self.__game_model.action_give_up()
+					self.__output_reaction(result_dict)
+				
 				# クリック位置がrematchボタン内の場合
-				if (rematch_btn_sfc_topleft[0] < event.pos[0]) and (event.pos[0] < rematch_btn_sfc_topleft[0]+rematch_btn_sfc.get_width()) and \
-				   (rematch_btn_sfc_topleft[1] < event.pos[1]) and (event.pos[1] < rematch_btn_sfc_topleft[1]+rematch_btn_sfc.get_height()):
+				if self.__validate_within_rect(event.pos, self.__rect_dict['rematch_button_area']):
 					# プレイヤーアクション：再戦する
-					result_dict = game_state.action_start_rematch()
-					if result_dict['is_valid']:
-						print_str = 'Action is valid : ' + result_dict['description']
-						sound_set.play()
-					else:
-						print_str = 'Action is invalid : ' + result_dict['description']
-						sound_error.play()
-					print(print_str)
+					result_dict = self.__game_model.action_start_rematch()
+					self.__output_reaction(result_dict)
+
+
+################################################################
+## CPUからの入力を受け付けるクラス
+################################################################
+class CpuEventControllerReversi:
+	
+	##private## コンストラクタ
+	def __init__(self, obj, rect_dict, tile_size):
+		self.__game_model = obj
+		self.__rect_dict  = rect_dict
+		self.__tile_size  = tile_size
+	
+	##public## CPUからの入力イベントを受け付ける（クソザコ）
+	def control_event(self):
+		# まずパスアクションを試す
+		result_dict = self.__game_model.action_pass()
 		
-		#### ボードのサーフェイス設定
+		# パスができなかったら、どこかにおけるまでランダムに設置アクションを繰り替えす
+		board_size = self.__game_model.get_board_size()
+		while result_dict['is_valid']== False:
+			pos_x = random.randrange(0, board_size[0], 1)
+			pos_y = random.randrange(0, board_size[1], 1)
+			result_dict = self.__game_model.action_set_stone([pos_x, pos_y])
+		
+		# ループを抜けたら、1回効果音を鳴らす
+		sound_set.play()
+
+
+################################################################
+## ゲーム画面を描画するクラス
+################################################################
+class ScreenViewReversi:
+	##private## クラス定数
+	__COLOR_BACKGROUND       = (  0,   0,   0)
+	__COLOR_BOARD_BACKGROUND = (  0, 128,   0)
+	__COLOR_BOARD_LINE       = (  0,  96,   0)
+	__COLOR_TEXT_BACKGROUND  = (128, 128, 128)
+	__COLOR_DEFAULT_TEXT     = (  0,   0, 255)
+	
+	##private## コンストラクタ
+	def __init__(self, obj, rect_dict, tile_size, font_size):
+		self.__game_model  = obj
+		self.__rect_dict   = rect_dict
+		self.__tile_size   = tile_size
+		self.__line_thick  = tile_size // 10
+		self.__smallfont   = pygame.font.SysFont(None, font_size)
+		self.__largefont   = pygame.font.SysFont(None, font_size * 2)
+		self.__main_screen = pygame.display.set_mode(self.__get_size(self.__rect_dict['main_screen']))
+		self.__sfc_dict    = {}
+		self.__sfc_dict['board_sfc']      = pygame.Surface(self.__get_size(self.__rect_dict['board_area']))
+		self.__sfc_dict['info_sfc']        = pygame.Surface(self.__get_size(self.__rect_dict['info_area']))
+		self.__sfc_dict['pass_btn_sfc']    = pygame.Surface(self.__get_size(self.__rect_dict['pass_button_area']))
+		self.__sfc_dict['giveup_btn_sfc']  = pygame.Surface(self.__get_size(self.__rect_dict['giveup_button_area']))
+		self.__sfc_dict['rematch_btn_sfc'] = pygame.Surface(self.__get_size(self.__rect_dict['rematch_button_area']))
+	
+	##private## 内部メソッド：rect定義から位置を取得する
+	def __get_pos(self, rect):
+		return (rect['x'], rect['y'])
+	
+	##private## 内部メソッド：rect定義からサイズを取得する
+	def __get_size(self, rect):
+		return (rect['w'], rect['h'])
+	
+	##private## 内部メソッド：ボード用サーフェイスを再描画する
+	def __update_board_surface(self, target_sfc_idx):
+		target_sfc = self.__sfc_dict[target_sfc_idx]
 		# 背景色
-		board_sfc.fill((0, 128, 0))
-		# ボード状態
-		for pos_y in range(BOARD_SIZE):
-			for pos_x in range(BOARD_SIZE):
-				tile_status = game_state.get_board_state([pos_x, pos_y])
-				tile_rect = (pos_x*TILE_SIZE, pos_y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-				if tile_status != GameStateReversi.EMPTY:
-					pygame.draw.ellipse(board_sfc, game_state.get_theme_color(tile_status), tile_rect)
+		target_sfc.fill(self.__COLOR_BOARD_BACKGROUND)
+		# 盤面
+		board_size = self.__game_model.get_board_size()
+		for pos_x in range(board_size[0]):
+			for pos_y in range(board_size[1]):
+				tile_status = self.__game_model.get_board_state([pos_x, pos_y])
+				tile_rect = (pos_x*self.__tile_size, pos_y*self.__tile_size, self.__tile_size, self.__tile_size)
+				if tile_status != GameModelReversi.EMPTY:
+					pygame.draw.ellipse(target_sfc, self.__game_model.get_theme_color(tile_status), tile_rect)
 		# 枠線
-		for w in range(0, board_sfc.get_width(), TILE_SIZE):
-			pygame.draw.line(board_sfc, (0, 96, 0), (w, 0), (w, board_sfc.get_height()))
-		for h in range(0, board_sfc.get_height(), TILE_SIZE):
-			pygame.draw.line(board_sfc, (0, 96, 0), (0, h), (board_sfc.get_width(), h))
+		for w in range(0, target_sfc.get_width(), self.__tile_size):
+			pygame.draw.line(target_sfc, self.__COLOR_BOARD_LINE, (w, 0), (w, target_sfc.get_height()))
+		for h in range(0, target_sfc.get_height(), self.__tile_size):
+			pygame.draw.line(target_sfc, self.__COLOR_BOARD_LINE, (0, h), (target_sfc.get_width(), h))
 		# ゲーム終了時メッセージ
-		#if game_end_flg:
-		if game_state.get_end_flg():
-			winner_player = game_state.get_winner_player()
+		if self.__game_model.get_end_flg():
+			winner_player = self.__game_model.get_winner_player()
 			if winner_player != None:
-				game_end_str = game_state.get_player_name(winner_player) + " is winner!!"
-				game_end_font_color = game_state.get_theme_color(winner_player)
+				game_end_str = 'Winner is ' + self.__game_model.get_player_name(winner_player) + '!!'
+				game_end_font_color = self.__game_model.get_theme_color(winner_player)
 			else:
-				game_end_str = "Draw !!"
-				game_end_font_color = (0, 255, 225)
-			game_end_msg  = largefont.render(game_end_str, True, game_end_font_color, (128, 128, 128))
+				game_end_str = 'Draw !!'
+				game_end_font_color = self.__COLOR_DEFAULT_TEXT
+			game_end_msg  = self.__largefont.render(game_end_str, True, game_end_font_color, self.__COLOR_TEXT_BACKGROUND)
 			game_end_rect = game_end_msg.get_rect()
-			game_end_rect.center = (board_sfc.get_width()//2, board_sfc.get_height()//2)
-			board_sfc.blit(game_end_msg, game_end_rect.topleft)
-			#sound_end.play()
-		
-		#### INFO欄のサーフェイス設定
+			game_end_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
+			target_sfc.blit(game_end_msg, game_end_rect.topleft)
+	
+	##private## 内部メソッド：INFO欄用サーフェイスを再描画する
+	def __update_info_surface(self, target_sfc_idx):
+		target_sfc = self.__sfc_dict[target_sfc_idx]
 		# 背景色
-		info_sfc.fill((0, 0, 0))
-		info_rect = (TILE_SIZE//10, TILE_SIZE//10, info_sfc.get_width()-(TILE_SIZE//10)*2, info_sfc.get_height()-(TILE_SIZE//10)*2)
-		pygame.draw.rect(info_sfc, (128, 128, 128), info_rect)
+		target_sfc.fill(self.__COLOR_BACKGROUND)
+		# 矩形
+		sfc_rect = (self.__line_thick, self.__line_thick, \
+					target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
+		pygame.draw.rect(target_sfc, self.__COLOR_TEXT_BACKGROUND, sfc_rect)
 		# アクティブプレイヤーおよび石数
-		active_player = game_state.get_active_player()
-		active_player_str = "Turn : " + game_state.get_player_name(active_player)
-		black_cnt_str     = "Black : " + str(game_state.get_stone_count(GameStateReversi.BLACK))
-		white_cnt_str     = "White : " + str(game_state.get_stone_count(GameStateReversi.WHITE))
-		active_player_msg = smallfont.render(active_player_str, True, game_state.get_theme_color(active_player))
-		black_cnt_msg     = smallfont.render(black_cnt_str,     True, game_state.get_theme_color(GameStateReversi.BLACK))
-		white_cnt_msg     = smallfont.render(white_cnt_str,     True, game_state.get_theme_color(GameStateReversi.WHITE))
+		active_player = self.__game_model.get_active_player()
+		active_player_str = 'Turn : ' + self.__game_model.get_player_name(active_player)
+		black_cnt_str     = 'Black : ' + str(self.__game_model.get_stone_count(GameModelReversi.BLACK))
+		white_cnt_str     = 'White : ' + str(self.__game_model.get_stone_count(GameModelReversi.WHITE))
+		active_player_msg = self.__smallfont.render(active_player_str, True, self.__game_model.get_theme_color(active_player))
+		black_cnt_msg     = self.__smallfont.render(black_cnt_str,     True, self.__game_model.get_theme_color(GameModelReversi.BLACK))
+		white_cnt_msg     = self.__smallfont.render(white_cnt_str,     True, self.__game_model.get_theme_color(GameModelReversi.WHITE))
 		active_player_msg_rect = active_player_msg.get_rect()
 		black_cnt_msg_rect     = black_cnt_msg.get_rect()
 		white_cnt_msg_rect     = white_cnt_msg.get_rect()
-		active_player_msg_rect.midleft = (TILE_SIZE*(1/2), TILE_SIZE*1)
-		black_cnt_msg_rect.midleft     = (TILE_SIZE*(1/2), TILE_SIZE*2)
-		white_cnt_msg_rect.midleft     = (TILE_SIZE*(1/2), TILE_SIZE*3)
-		info_sfc.blit(active_player_msg, active_player_msg_rect.topleft)
-		info_sfc.blit(black_cnt_msg, black_cnt_msg_rect.topleft)
-		info_sfc.blit(white_cnt_msg, white_cnt_msg_rect.topleft)
-		
-		#### passボタンのサーフェイス設定
+		active_player_msg_rect.midleft = (self.__tile_size*(1/2), self.__tile_size*1)
+		black_cnt_msg_rect.midleft     = (self.__tile_size*(1/2), self.__tile_size*2)
+		white_cnt_msg_rect.midleft     = (self.__tile_size*(1/2), self.__tile_size*3)
+		target_sfc.blit(active_player_msg, active_player_msg_rect.topleft)
+		target_sfc.blit(black_cnt_msg, black_cnt_msg_rect.topleft)
+		target_sfc.blit(white_cnt_msg, white_cnt_msg_rect.topleft)
+	
+	##private## 内部メソッド：ボタン用サーフェイスを再描画する
+	def __update_button_surface(self, target_sfc_idx, txt_str):
+		target_sfc = self.__sfc_dict[target_sfc_idx]
 		# 背景色
-		pass_btn_sfc.fill((0, 0, 0))
-		pass_btn_rect = (TILE_SIZE//10, TILE_SIZE//10, pass_btn_sfc.get_width()-(TILE_SIZE//10)*2, pass_btn_sfc.get_height()-(TILE_SIZE//10)*2)
-		pygame.draw.rect(pass_btn_sfc, (128, 128, 128), pass_btn_rect)
-		# ボタンテキスト
-		pass_btn_str = "< Pass >"
-		pass_btn_msg = smallfont.render(pass_btn_str, True, (0, 0, 255))
-		pass_btn_msg_rect = pass_btn_msg.get_rect()
-		pass_btn_msg_rect.center = (pass_btn_sfc.get_width()//2, pass_btn_sfc.get_height()//2)
-		pass_btn_sfc.blit(pass_btn_msg, pass_btn_msg_rect.topleft)
+		target_sfc.fill(self.__COLOR_BACKGROUND)
+		# 矩形
+		sfc_rect = (self.__line_thick, self.__line_thick, \
+					target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
+		pygame.draw.rect(target_sfc, self.__COLOR_TEXT_BACKGROUND, sfc_rect)
+		# テキスト
+		txt_msg = self.__smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT)
+		txt_msg_rect = txt_msg.get_rect()
+		txt_msg_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
+		# 描画
+		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
+	
+	
+	##public## ゲーム画面を生成する
+	def draw_view(self):
 		
-		#### giveupボタンのサーフェイス設定
-		# 背景色
-		giveup_btn_sfc.fill((0, 0, 0))
-		giveup_btn_rect = (TILE_SIZE//10, TILE_SIZE//10, giveup_btn_sfc.get_width()-(TILE_SIZE//10)*2 , giveup_btn_sfc.get_height()-(TILE_SIZE//10)*2)
-		pygame.draw.rect(giveup_btn_sfc, (128, 128, 128), giveup_btn_rect)
-		# ボタンテキスト
-		giveup_btn_str = "< Give up >"
-		giveup_btn_msg = smallfont.render(giveup_btn_str, True, (0, 0, 255))
-		giveup_btn_msg_rect = giveup_btn_msg.get_rect()
-		giveup_btn_msg_rect.center = (giveup_btn_sfc.get_width()//2, giveup_btn_sfc.get_height()//2)
-		giveup_btn_sfc.blit(giveup_btn_msg, giveup_btn_msg_rect.topleft)
+		# ボードのサーフェイスを再描画する
+		self.__update_board_surface('board_sfc')
 		
-		#### rematchボタンのサーフェイス設定
-		# 背景色
-		rematch_btn_sfc.fill((0, 0, 0))
-		rematch_btn_rect = (TILE_SIZE//10, TILE_SIZE//10, rematch_btn_sfc.get_width()-(TILE_SIZE//10)*2 , rematch_btn_sfc.get_height()-(TILE_SIZE//10)*2)
-		pygame.draw.rect(rematch_btn_sfc, (128, 128, 128), rematch_btn_rect)
-		# ボタンテキスト
-		rematch_btn_str = "< Start rematch >"
-		rematch_btn_msg = smallfont.render(rematch_btn_str, True, (0, 0, 255))
-		rematch_btn_msg_rect = rematch_btn_msg.get_rect()
-		rematch_btn_msg_rect.center = (rematch_btn_sfc.get_width()//2, rematch_btn_sfc.get_height()//2)
-		rematch_btn_sfc.blit(rematch_btn_msg, rematch_btn_msg_rect.topleft)
+		# INFO欄のサーフェイスを再描画する
+		self.__update_info_surface('info_sfc')
 		
-		#### 画面更新
-		main_screen.blit(board_sfc      , board_sfc_topleft)
-		main_screen.blit(info_sfc       , info_sfc_topleft)
-		main_screen.blit(pass_btn_sfc   , pass_btn_sfc_topleft)
-		main_screen.blit(giveup_btn_sfc , giveup_btn_sfc_topleft)
-		main_screen.blit(rematch_btn_sfc, rematch_btn_sfc_topleft)
+		# passボタンのサーフェイスを再描画する
+		self.__update_button_surface('pass_btn_sfc', '< Pass >')
+		
+		# giveupボタンのサーフェイスを再描画する
+		self.__update_button_surface('giveup_btn_sfc', '< Give up >')
+		
+		# rematchボタンのサーフェイスを再描画する
+		self.__update_button_surface('rematch_btn_sfc', '< Start rematch >')
+		
+		# 全体画面への貼り付け
+		self.__main_screen.blit(self.__sfc_dict['board_sfc']      , self.__get_pos(self.__rect_dict['board_area']))
+		self.__main_screen.blit(self.__sfc_dict['info_sfc']       , self.__get_pos(self.__rect_dict['info_area']))
+		self.__main_screen.blit(self.__sfc_dict['pass_btn_sfc']   , self.__get_pos(self.__rect_dict['pass_button_area']))
+		self.__main_screen.blit(self.__sfc_dict['giveup_btn_sfc'] , self.__get_pos(self.__rect_dict['giveup_button_area']))
+		self.__main_screen.blit(self.__sfc_dict['rematch_btn_sfc'], self.__get_pos(self.__rect_dict['rematch_button_area']))
+
+
+################################################################
+## メイン関数
+################################################################
+def main():
+	
+	# 固定値設定
+	FPS       = 15
+	FONT_SIZE = 24
+	TILE_SIZE = 50
+	BOARD_SIZE    = 8 # ボードの1辺のタイル数(偶数推奨)
+	INFO_SIZE_H   = 4 # INFO欄縦幅のタイル数
+	INFO_SIZE_W   = 4 # INFO欄横幅のタイル数
+	BUTTON_SIZE_H = 1 # ボタン縦幅のタイル数
+	BUTTON_SIZE_W = 4 # ボタン横幅のタイル数
+	
+	# 各種エリアの位置/サイズ指定
+	rect_dict = {}
+	rect_dict['board_area'] = { \
+		'x' : 0, \
+		'y' : 0, \
+		'w' : TILE_SIZE * BOARD_SIZE, \
+		'h' : TILE_SIZE * BOARD_SIZE}
+	rect_dict['info_area'] = { \
+		'x' : rect_dict['board_area']['w'], \
+		'y' : 0, \
+		'w' : TILE_SIZE * INFO_SIZE_W, \
+		'h' : TILE_SIZE * INFO_SIZE_H}
+	rect_dict['pass_button_area'] = { \
+		'x' : rect_dict['board_area']['w'], \
+		'y' : rect_dict['info_area']['h'], \
+		'w' : TILE_SIZE * BUTTON_SIZE_W, \
+		'h' : TILE_SIZE * BUTTON_SIZE_H}
+	rect_dict['giveup_button_area'] = { \
+		'x' : rect_dict['board_area']['w'], \
+		'y' : rect_dict['info_area']['h'] + rect_dict['pass_button_area']['h'], \
+		'w' : TILE_SIZE * BUTTON_SIZE_W, \
+		'h' : TILE_SIZE * BUTTON_SIZE_H}
+	rect_dict['rematch_button_area'] = { \
+		'x' : rect_dict['board_area']['w'], \
+		'y' : rect_dict['info_area']['h'] + rect_dict['pass_button_area']['h'] + rect_dict['giveup_button_area']['h'], \
+		'w' : TILE_SIZE * BUTTON_SIZE_W, \
+		'h' : TILE_SIZE * BUTTON_SIZE_H}
+	rect_dict['main_screen'] = { \
+		'x' : 0, \
+		'y' : 0, \
+		'w' : rect_dict['board_area']['w'] + rect_dict['info_area']['w'], \
+		'h' : max([rect_dict['board_area']['h'], \
+				   rect_dict['info_area']['h'] + rect_dict['pass_button_area']['h'] + \
+				   rect_dict['giveup_button_area']['h'] + rect_dict['rematch_button_area']['h'] ])}
+	
+	# ゲームのルール/状態を管理するオブジェクト
+	game_model = GameModelReversi(BOARD_SIZE)
+	
+	# ユーザからの入力イベントを受け付けるオブジェクト
+	user_event = UserEventControllerReversi(game_model, rect_dict, TILE_SIZE)
+	user = game_model.get_active_player()
+	
+	# CPUからの入力イベントを受け付けるオブジェクト
+	cpu_event  = CpuEventControllerReversi(game_model, rect_dict, TILE_SIZE)
+	
+	# ゲーム画面を描画するオブジェクト
+	screen_view = ScreenViewReversi(game_model, rect_dict, TILE_SIZE, FONT_SIZE)
+	
+	# 無限ループ
+	while True:
+		
+		# 先行プレイヤーを人間とみなし、アクティブプレイヤーによって入力イベントの受付を切り替える
+		if game_model.get_active_player() == user:
+			# ユーザ入力イベントのコントロール
+			user_event.control_event()
+		else:
+			# CPU入力イベントのコントロール
+			cpu_event.control_event()
+		
+		# ゲーム画面の描画
+		screen_view.draw_view()
+		
+		# 画面更新
 		pygame.display.update()
 		fpsclock.tick(FPS)
 
