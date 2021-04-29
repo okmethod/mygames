@@ -83,7 +83,7 @@ class GameStateReversi:
 	def get_end_flg(self):
 		return self.__end_flg
 	
-	##private## 管理コマンド：初期配置を設定する
+	##private## 管理コマンド：空の状態のボードに初期配置を設定する
 	def __init_board(self):
 		self.__board_state[self.__board_len_y//2][self.__board_len_x//2]     = self.WHITE
 		self.__board_state[self.__board_len_y//2][self.__board_len_x//2-1]   = self.BLACK
@@ -256,7 +256,6 @@ class GameStateReversi:
 	
 	##public## プレイヤーアクション：投了する
 	def action_give_up(self):
-		
 		# ゲーム終了フラグがONの場合、何もしない
 		if self.__end_flg == True:
 			# アクションの結果を返却する
@@ -270,6 +269,22 @@ class GameStateReversi:
 		# アクションの結果を返却する
 		description_str = 'Active player gave up.'
 		return {'is_valid' : True, 'description' : description_str}
+	
+	##public## プレイヤーアクション：再戦する
+	def action_start_rematch(self):
+		
+		# ゲーム終了フラグがOFFの場合、何もしない
+		if self.__end_flg == False:
+			# アクションの結果を返却する
+			description_str = 'This game is still going on.'
+			return {'is_valid' : False, 'description' : description_str}
+		
+		# ゲーム状態を初期化する
+		self.__init__(self.__board_len_x)
+		
+		# アクションの結果を返却する
+		description_str = 'Next game started.'
+		return {'is_valid' : True, 'description' : description_str}
 
 
 ################################################################
@@ -282,16 +297,18 @@ def main():
 	info_sfc        = pygame.Surface((TILE_SIZE * INFO_SIZE_W , TILE_SIZE * INFO_SIZE_H))
 	pass_btn_sfc    = pygame.Surface((TILE_SIZE * BUTTON_SIZE_W  , TILE_SIZE * BUTTON_SIZE_H))
 	giveup_btn_sfc  = pygame.Surface((TILE_SIZE * BUTTON_SIZE_W  , TILE_SIZE * BUTTON_SIZE_H))
+	rematch_btn_sfc = pygame.Surface((TILE_SIZE * BUTTON_SIZE_W  , TILE_SIZE * BUTTON_SIZE_H))
 	
 	# 各種サーフェイスの位置指定
 	board_sfc_topleft       = (0, 0)
 	info_sfc_topleft        = (board_sfc.get_width(), 0)
 	pass_btn_sfc_topleft    = (board_sfc.get_width(), info_sfc.get_height())
 	giveup_btn_sfc_topleft  = (board_sfc.get_width(), info_sfc.get_height() + pass_btn_sfc.get_height())
+	rematch_btn_sfc_topleft = (board_sfc.get_width(), info_sfc.get_height() + pass_btn_sfc.get_height() + giveup_btn_sfc.get_height())
 	
 	# 描画系の初期設定
 	main_screen_width  = board_sfc.get_width() + info_sfc.get_width()
-	main_screen_height = max([board_sfc.get_height(), info_sfc.get_height() + pass_btn_sfc.get_height() + giveup_btn_sfc.get_height()])
+	main_screen_height = max([board_sfc.get_height(), info_sfc.get_height() + pass_btn_sfc.get_height() + giveup_btn_sfc.get_height() + rematch_btn_sfc.get_height()])
 	main_screen = pygame.display.set_mode([main_screen_width, main_screen_height])
 	fpsclock  = pygame.time.Clock()
 	smallfont = pygame.font.SysFont(None, FONT_SIZE)
@@ -342,6 +359,18 @@ def main():
 				   (giveup_btn_sfc_topleft[1] < event.pos[1]) and (event.pos[1] < giveup_btn_sfc_topleft[1]+giveup_btn_sfc.get_height()):
 					# プレイヤーアクション：投了する
 					result_dict = game_state.action_give_up()
+					if result_dict['is_valid']:
+						print_str = 'Action is valid : ' + result_dict['description']
+						sound_set.play()
+					else:
+						print_str = 'Action is invalid : ' + result_dict['description']
+						sound_error.play()
+					print(print_str)
+				# クリック位置がrematchボタン内の場合
+				if (rematch_btn_sfc_topleft[0] < event.pos[0]) and (event.pos[0] < rematch_btn_sfc_topleft[0]+rematch_btn_sfc.get_width()) and \
+				   (rematch_btn_sfc_topleft[1] < event.pos[1]) and (event.pos[1] < rematch_btn_sfc_topleft[1]+rematch_btn_sfc.get_height()):
+					# プレイヤーアクション：再戦する
+					result_dict = game_state.action_start_rematch()
 					if result_dict['is_valid']:
 						print_str = 'Action is valid : ' + result_dict['description']
 						sound_set.play()
@@ -416,7 +445,7 @@ def main():
 		pass_btn_msg_rect.center = (pass_btn_sfc.get_width()//2, pass_btn_sfc.get_height()//2)
 		pass_btn_sfc.blit(pass_btn_msg, pass_btn_msg_rect.topleft)
 		
-		#### endボタンのサーフェイス設定
+		#### giveupボタンのサーフェイス設定
 		# 背景色
 		giveup_btn_sfc.fill((0, 0, 0))
 		giveup_btn_rect = (TILE_SIZE//10, TILE_SIZE//10, giveup_btn_sfc.get_width()-(TILE_SIZE//10)*2 , giveup_btn_sfc.get_height()-(TILE_SIZE//10)*2)
@@ -428,11 +457,24 @@ def main():
 		giveup_btn_msg_rect.center = (giveup_btn_sfc.get_width()//2, giveup_btn_sfc.get_height()//2)
 		giveup_btn_sfc.blit(giveup_btn_msg, giveup_btn_msg_rect.topleft)
 		
+		#### rematchボタンのサーフェイス設定
+		# 背景色
+		rematch_btn_sfc.fill((0, 0, 0))
+		rematch_btn_rect = (TILE_SIZE//10, TILE_SIZE//10, rematch_btn_sfc.get_width()-(TILE_SIZE//10)*2 , rematch_btn_sfc.get_height()-(TILE_SIZE//10)*2)
+		pygame.draw.rect(rematch_btn_sfc, (128, 128, 128), rematch_btn_rect)
+		# ボタンテキスト
+		rematch_btn_str = "< Start rematch >"
+		rematch_btn_msg = smallfont.render(rematch_btn_str, True, (0, 0, 255))
+		rematch_btn_msg_rect = rematch_btn_msg.get_rect()
+		rematch_btn_msg_rect.center = (rematch_btn_sfc.get_width()//2, rematch_btn_sfc.get_height()//2)
+		rematch_btn_sfc.blit(rematch_btn_msg, rematch_btn_msg_rect.topleft)
+		
 		#### 画面更新
-		main_screen.blit(board_sfc   , board_sfc_topleft)
-		main_screen.blit(info_sfc    , info_sfc_topleft)
-		main_screen.blit(pass_btn_sfc, pass_btn_sfc_topleft)
+		main_screen.blit(board_sfc      , board_sfc_topleft)
+		main_screen.blit(info_sfc       , info_sfc_topleft)
+		main_screen.blit(pass_btn_sfc   , pass_btn_sfc_topleft)
 		main_screen.blit(giveup_btn_sfc , giveup_btn_sfc_topleft)
+		main_screen.blit(rematch_btn_sfc, rematch_btn_sfc_topleft)
 		pygame.display.update()
 		fpsclock.tick(FPS)
 
