@@ -21,7 +21,7 @@ def main():
 	# pygameの初期化
 	pygame.init()
 	pygame.mixer.init()
-	pygame.display.set_caption("REVERSI -FACE BATTLE-") 
+	pygame.display.set_caption("REVERSI") 
 	fpsclock  = pygame.time.Clock()
 
 	# 外部ファイルのロード
