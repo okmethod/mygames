@@ -1,166 +1,126 @@
 import sys
-import datetime
-import json
 import random
-from math import floor
-
 import pygame
 from pygame.locals import QUIT, MOUSEBUTTONDOWN
 
+# ©ìƒNƒ‰ƒX‚ÌƒpƒX
+sys.path.append('../../lib/GameBaseClass')
+
+import GameModelBase as gmb
+import EventControllerBase as ecb
+import ScreenViewBase as svb
 
 ################################################################
-## ãƒªãƒãƒ¼ã‚·ã®ãƒ«ãƒ¼ãƒ«/çŠ¶æ…‹ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
+## ƒŠƒo[ƒV‚Ìƒ‹[ƒ‹/ó‘Ô‚ğŠÇ—‚·‚éƒNƒ‰ƒX
 ################################################################
-class GameModelReversi:
-	##public## ã‚¯ãƒ©ã‚¹å®šæ•°
-	EMPTY = -1
-	BLACK = 0
-	WHITE = 1
+class GameModelReversi(gmb.GameModelBase):
 	
-	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼šã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹
-	def __init__(self, board_size, player1, player2):
-		self.__board_len_y = board_size
-		self.__board_len_x = board_size
-		self.__board_state = [[self.EMPTY for pos_x in range(self.__board_len_x)] for pos_y in range(self.__board_len_y)]
-		self.__player_data = {}
-		self.__player_data[self.BLACK] = {'player_name' : player1[0], 'theme_color' : player1[1], 'theme_image' : player1[2], 'stone_count' : 0 }
-		self.__player_data[self.WHITE] = {'player_name' : player2[0], 'theme_color' : player2[1], 'theme_image' : player2[2], 'stone_count' : 0 }
-		self.__active_player = self.BLACK
-		self.__winner_player = None
+	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒI[ƒo[ƒ‰ƒCƒhj
+	def __init__(self, player_list, board_size):
+		super().__init__(player_list)
+		# ƒvƒŒƒCƒ„[î•ñ‚ÉÎ‚Ì”‚ğ’Ç‰Á
+		for p in self._player_data:
+			p['stone_count'] = 0
+		# ”Õ–Ê‚ğ•Û‚·‚é“ñŸŒ³ƒŠƒXƒgi‹óFNoneAÎFplayer_list‚ÌƒCƒ“ƒfƒbƒNƒX’lj
+		self.__board_size  = board_size
+		self.__board_state = [[None for pos_x in range(self.__board_size)] for pos_y in range(self.__board_size)]
+		# ‘O‰ñÀs‚µ‚½ƒAƒNƒVƒ‡ƒ“‚ªƒpƒX‚Å‚ ‚Á‚½‚±‚Æ‚ğ•Û‚·‚éƒtƒ‰ƒO
 		self.__pass_flg = False
-		self.__end_flg  = False
-		self.__game_record = []
-		# åˆæœŸé…ç½®ã®çŸ³ã‚’è¨­ç½®
-		self.__init_board()
+		# ‰Šú”z’u‚ÌÎ‚ğİ’u
+		self._init_game()
 	
-	##public## getterï¼šãƒœãƒ¼ãƒ‰ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹
+	##public## getterFƒ{[ƒhƒTƒCƒY‚ğæ“¾‚·‚é
 	def get_board_size(self):
-		return [self.__board_len_x, self.__board_len_y]
+		return self.__board_size
 	
-	##public## getterï¼šåå¯¾ã®è‰²ã‚’å–å¾—ã™ã‚‹
-	def get_reverse_color(self, c):
-		if c == self.BLACK:
-			return self.WHITE
-		if c == self.WHITE:
-			return self.BLACK
-	
-	##public## getterï¼šã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—ã™ã‚‹
-	def get_active_player(self):
-		return self.__active_player
-	
-	##public## getterï¼šå‹åˆ©ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—ã™ã‚‹
-	def get_winner_player(self):
-		return self.__winner_player
-	
-	##public## getterï¼šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åã‚’å–å¾—ã™ã‚‹
-	def get_player_name(self, c):
-		return self.__player_data[c]['player_name']
-	
-	##public## getterï¼šãƒ†ãƒ¼ãƒã‚«ãƒ©ãƒ¼ã‚’å–å¾—ã™ã‚‹
-	def get_theme_color(self, c):
-		return self.__player_data[c]['theme_color']
-	
-	##public## getterï¼šãƒ†ãƒ¼ãƒç”»åƒã‚’å–å¾—ã™ã‚‹
-	def get_theme_image(self, c):
-		return self.__player_data[c]['theme_image']
-	
-	##public## getterï¼šçŸ³æ•°ã‚’å–å¾—ã™ã‚‹
-	def get_stone_count(self, c):
-		return self.__player_data[c]['stone_count']
-	
-	##public## getterï¼šæŒ‡å®šä½ç½®ã®ã‚¿ã‚¤ãƒ«ã®çŠ¶æ…‹ã‚’å–å¾—ã™ã‚‹
+	##public## getterFw’èˆÊ’u‚Ìƒ^ƒCƒ‹‚Ìó‘Ô‚ğæ“¾‚·‚é
 	def get_board_state(self, pos):
 		pos_x, pos_y  = pos[0], pos[1]
 		return self.__board_state[pos_y][pos_x]
 	
-	##public## getterï¼šã‚²ãƒ¼ãƒ ãŒçµ‚äº†ã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹
-	def get_end_flg(self):
-		return self.__end_flg
+	##public## getterFw’èƒvƒŒƒCƒ„[‚ÌÎ”‚ğæ“¾‚·‚é
+	def get_stone_count(self, c):
+		return self._player_data[c]['stone_count']
 	
-	##public## getterï¼šæ£‹è­œã‚’å–å¾—ã™ã‚‹
-	def get_game_record(self):
-		return self.__game_record
+	##private## “à•”ƒƒ\ƒbƒhFƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚éiƒI[ƒo[ƒ‰ƒCƒhj
+	def _init_game(self):
+		super()._init_game()
+		board_size = self.get_board_size()
+		self.__board_state = [[None for pos_x in range(self.__board_size)] for pos_y in range(self.__board_size)]
+		self.__board_state[board_size//2][board_size//2]     = self.get_next_player()
+		self.__board_state[board_size//2][board_size//2-1]   = self.get_active_player()
+		self.__board_state[board_size//2-1][board_size//2]   = self.get_active_player()
+		self.__board_state[board_size//2-1][board_size//2-1] = self.get_next_player()
+		self._player_data[self.get_active_player()]['stone_count'] = 2
+		self._player_data[self.get_next_player()]['stone_count'] = 2
+		
 	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šç©ºã®çŠ¶æ…‹ã®ãƒœãƒ¼ãƒ‰ã«åˆæœŸé…ç½®ã®çŸ³ã‚’è¨­å®šã™ã‚‹
-	def __init_board(self):
-		self.__board_state[self.__board_len_y//2][self.__board_len_x//2]     = self.WHITE
-		self.__board_state[self.__board_len_y//2][self.__board_len_x//2-1]   = self.BLACK
-		self.__board_state[self.__board_len_y//2-1][self.__board_len_x//2]   = self.BLACK
-		self.__board_state[self.__board_len_y//2-1][self.__board_len_x//2-1] = self.WHITE
-		self.__player_data[self.BLACK]['stone_count'] = 2
-		self.__player_data[self.WHITE]['stone_count'] = 2
-		self.__game_record = []
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’äº¤ä»£ã™ã‚‹
-	def __change_turn(self):
-		self.__active_player = self.get_reverse_color(self.__active_player)
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šå‹åˆ©ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’åˆ¤å®šã™ã‚‹
+	##private## “à•”ƒƒ\ƒbƒhFŸ—˜ƒvƒŒƒCƒ„[‚ğ”»’è‚µ‚ÄXV‚·‚é
 	def __decide_winner_player(self):
-		if self.get_stone_count(self.BLACK) > self.get_stone_count(self.WHITE):
-			self.__winner_player = self.BLACK
-		elif self.get_stone_count(self.BLACK) < self.get_stone_count(self.WHITE):
-			self.__winner_player = self.WHITE
+		if self.get_stone_count(self.get_active_player()) > self.get_stone_count(self.get_next_player()):
+			self._winner_player = self.get_active_player()
+		elif self.get_stone_count(self.get_active_player()) < self.get_stone_count(self.get_next_player()):
+			self._winner_player = self.get_next_player()
 		else:
-			self.__winner_player = None
+			self._winner_player = None
 	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šçŸ³ã‚’åè»¢ã™ã‚‹(ã¾ãŸã¯ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã™ã‚‹)
+	##private## “à•”ƒƒ\ƒbƒhFÎ‚ğ”½“]‚·‚é(‚Ü‚½‚ÍƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚·‚é)
 	def __reverse_stone(self, pos, dir, update_flg):
 		pos_x, pos_y  = pos[0], pos[1]
 		dir_x, dir_y  = dir[0], dir[1]
 		
-		# åè»¢ä½ç½®ã‚’ä¿æŒã™ã‚‹é…åˆ—
+		# ”½“]ˆÊ’u‚ğ•Û‚·‚é”z—ñ
 		reverse_pos_list = []
 		
-		# ã¯ã¿å‡ºã•ãªã„é™ã‚Šã€ç¹°ã‚Šè¿”ã™
-		while (pos_x + dir_x >= 0) and (pos_x + dir_x <= self.__board_len_x-1) and \
-			  (pos_y + dir_y >= 0) and (pos_y + dir_y <= self.__board_len_y-1):
+		# ‚Í‚İo‚³‚È‚¢ŒÀ‚èAŒJ‚è•Ô‚·
+		while (pos_x + dir_x >= 0) and (pos_x + dir_x <= self.get_board_size()-1) and \
+			  (pos_y + dir_y >= 0) and (pos_y + dir_y <= self.get_board_size()-1):
 			
-			# æŒ‡å®šã•ã‚ŒãŸæ–¹å‘ã®éš£ã®ä½ç½®
+			# w’è‚³‚ê‚½•ûŒü‚Ì—×‚ÌˆÊ’u
 			pos_x = pos_x + dir_x
 			pos_y = pos_y + dir_y
 			
-			# ç©ºç™½ã®å ´åˆ
-			if self.__board_state[pos_y][pos_x] == self.EMPTY:
+			# ‹ó”’‚Ìê‡
+			if self.__board_state[pos_y][pos_x] == None:
 				break
-			# åŒã˜è‰²ã§ãªã„å ´åˆ
-			elif self.__board_state[pos_y][pos_x] != self.__active_player:
-				# åè»¢ä½ç½®ã‚’äºˆç´„ã™ã‚‹
+			# “¯‚¶F‚Å‚È‚¢ê‡
+			elif self.__board_state[pos_y][pos_x] != self.get_active_player():
+				# ”½“]ˆÊ’u‚ğ—\–ñ‚·‚é
 				reverse_pos_list.append([pos_x, pos_y])
-			# åŒã˜è‰²ã®å ´åˆ
-			elif self.__board_state[pos_y][pos_x] == self.__active_player:
-				# 1ã¤ä»¥ä¸Šã®åè»¢ä½ç½®ãŒäºˆç´„ã•ã‚Œã¦ã„ã‚‹å ´åˆ
+			# “¯‚¶F‚Ìê‡
+			elif self.__board_state[pos_y][pos_x] == self.get_active_player():
+				# 1‚ÂˆÈã‚Ì”½“]ˆÊ’u‚ª—\–ñ‚³‚ê‚Ä‚¢‚éê‡
 				if len(reverse_pos_list) > 0:
-					# æ›´æ–°ãƒ•ãƒ©ã‚°ãŒã‚ªãƒ³ã®å ´åˆ
+					# XVƒtƒ‰ƒO‚ªƒIƒ“‚Ìê‡
 					if update_flg == True:
 						for pos in reverse_pos_list:
-							# åè»¢ä½ç½®ã‚’æ›´æ–°ã™ã‚‹
-							self.__board_state[pos[1]][pos[0]] = self.__active_player
-							# çŸ³ã‚«ã‚¦ãƒ³ã‚¿ã‚’æ›´æ–°ã™ã‚‹
-							self.__player_data[self.__active_player]['stone_count'] += 1
-							self.__player_data[self.get_reverse_color(self.__active_player)]['stone_count'] -= 1
+							# ”½“]ˆÊ’u‚ğXV‚·‚é
+							self.__board_state[pos[1]][pos[0]] = self.get_active_player()
+							# ÎƒJƒEƒ“ƒ^‚ğXV‚·‚é
+							self._player_data[self.get_active_player()]['stone_count'] += 1
+							self._player_data[self.get_next_player()]['stone_count'] -= 1
 					return True
 		
 		return False
 	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šæŒ‡å®šä½ç½®ãŒæœ‰åŠ¹æ‰‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
+	##private## “à•”ƒƒ\ƒbƒhFw’èˆÊ’u‚ª—LŒøè‚©‚Ç‚¤‚©‚ğ”»’è‚·‚é
 	def __validate_set_pos(self, pos):
 		pos_x, pos_y = pos[0], pos[1]
 		
-		# æŒ‡å®šä½ç½®ãŒãƒœãƒ¼ãƒ‰å†…ã®åº§æ¨™ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹
-		if (pos_y < 0) and (self.__board_len_y <= pos_y) and \
-		   (pos_x < 0) and (self.__board_len_x <= pos_x):
-			# åˆ¤å®šçµæœã‚’è¿”å´ã™ã‚‹
+		# w’èˆÊ’u‚ªƒ{[ƒh“à‚ÌÀ•W‚©‚Ç‚¤‚©‚ğŠm”F‚·‚é
+		if (pos_y < 0) and (self.get_board_size() <= pos_y) and \
+		   (pos_x < 0) and (self.get_board_size() <= pos_x):
+			# ”»’èŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'The specified position is out of range.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# æŒ‡å®šä½ç½®ãŒç©ºã‚¿ã‚¤ãƒ«ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹
-		if self.__board_state[pos_y][pos_x] != self.EMPTY:
-			# åˆ¤å®šçµæœã‚’è¿”å´ã™ã‚‹
+		# w’èˆÊ’u‚ª‹óƒ^ƒCƒ‹‚©‚Ç‚¤‚©‚ğŠm”F‚·‚é
+		if self.__board_state[pos_y][pos_x] != None:
+			# ”»’èŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'The specified position is not empty.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# çŸ³ãŒåè»¢ã™ã‚‹ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹
+		# Î‚ª”½“]‚·‚é‚©‚Ç‚¤‚©‚ğŠm”F‚·‚é
 		if self.__reverse_stone([pos_x, pos_y], [ 0, -1], False) or \
 		   self.__reverse_stone([pos_x, pos_y], [ 1, -1], False) or \
 		   self.__reverse_stone([pos_x, pos_y], [ 1,  0], False) or \
@@ -169,391 +129,320 @@ class GameModelReversi:
 		   self.__reverse_stone([pos_x, pos_y], [-1,  1], False) or \
 		   self.__reverse_stone([pos_x, pos_y], [-1,  0], False) or \
 		   self.__reverse_stone([pos_x, pos_y], [-1, -1], False):
-			# åˆ¤å®šçµæœã‚’è¿”å´ã™ã‚‹
+			# ”»’èŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'The specified position flips some stones.'
 			return {'is_valid' : True, 'description' : description_str}
 		else:
-			# åˆ¤å®šçµæœã‚’è¿”å´ã™ã‚‹
+			# ”»’èŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'The specified position flips no stones.'
 			return {'is_valid' : False, 'description' : description_str}
 	
-	##public## ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šçŸ³ã‚’è¨­ç½®ã™ã‚‹
+	##public## ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FÎ‚ğİ’u‚·‚é
 	def action_set_stone(self, pos):
 		pos_x, pos_y = pos[0], pos[1]
 		
-		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒONã®å ´åˆã€ä½•ã‚‚ã—ãªã„
-		if self.__end_flg == True:
-			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªON‚Ìê‡A‰½‚à‚µ‚È‚¢
+		if self.get_game_end_flg() == True:
+			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'This game has terminated.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# æŒ‡å®šä½ç½®ãŒæœ‰åŠ¹æ‰‹ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹
-		result_dict = self.__validate_set_pos(pos)
+		# w’èˆÊ’u‚ª—LŒøè‚©‚Ç‚¤‚©‚ğŠm”F‚·‚é
+		action_result = self.__validate_set_pos(pos)
 		
-		# æœ‰åŠ¹æ‰‹ã§ã‚ã£ãŸå ´åˆ
-		if result_dict['is_valid']:
-			# å½“è©²ã‚¿ã‚¤ãƒ«ã‚’ã‚¿ãƒ¼ãƒ³ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®è‰²ã«å¤‰æ›´ã™ã‚‹
-			self.__board_state[pos_y][pos_x] = self.__active_player
-			# çŸ³ã‚«ã‚¦ãƒ³ã‚¿ã‚’ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆã™ã‚‹
-			self.__player_data[self.__active_player]['stone_count'] += 1
-			# çŸ³ã‚’åè»¢ã™ã‚‹(8æ–¹å‘)
-			self.__reverse_stone([pos_x, pos_y], [ 0, -1], True) # ä¸Š
-			self.__reverse_stone([pos_x, pos_y], [ 1, -1], True) # å³ä¸Š
-			self.__reverse_stone([pos_x, pos_y], [ 1,  0], True) # å³
-			self.__reverse_stone([pos_x, pos_y], [ 1,  1], True) # å³ä¸‹
-			self.__reverse_stone([pos_x, pos_y], [ 0,  1], True) # ä¸‹
-			self.__reverse_stone([pos_x, pos_y], [-1,  1], True) # å·¦ä¸‹
-			self.__reverse_stone([pos_x, pos_y], [-1,  0], True) # å·¦
-			self.__reverse_stone([pos_x, pos_y], [-1, -1], True) # å·¦ä¸Š
-			# ç©ºã‚¿ã‚¤ãƒ«ãŒæ®‹ã£ã¦ã„ãªã‘ã‚Œã°ã€å‹è€…ã‚’åˆ¤å®šã—ã¦ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ³ã«ã™ã‚‹
-			if self.get_stone_count(self.BLACK) + self.get_stone_count(self.WHITE) == self.__board_len_y * self.__board_len_x:
+		# —LŒøè‚Å‚ ‚Á‚½ê‡
+		if action_result['is_valid']:
+			# “–ŠYƒ^ƒCƒ‹‚ğƒ^[ƒ“ƒvƒŒƒCƒ„[‚ÌF‚É•ÏX‚·‚é
+			self.__board_state[pos_y][pos_x] = self.get_active_player()
+			# ÎƒJƒEƒ“ƒ^‚ğƒCƒ“ƒNƒŠƒƒ“ƒg‚·‚é
+			self._player_data[self.get_active_player()]['stone_count'] += 1
+			# Î‚ğ”½“]‚·‚é(8•ûŒü)
+			self.__reverse_stone([pos_x, pos_y], [ 0, -1], True) # ã
+			self.__reverse_stone([pos_x, pos_y], [ 1, -1], True) # ‰Eã
+			self.__reverse_stone([pos_x, pos_y], [ 1,  0], True) # ‰E
+			self.__reverse_stone([pos_x, pos_y], [ 1,  1], True) # ‰E‰º
+			self.__reverse_stone([pos_x, pos_y], [ 0,  1], True) # ‰º
+			self.__reverse_stone([pos_x, pos_y], [-1,  1], True) # ¶‰º
+			self.__reverse_stone([pos_x, pos_y], [-1,  0], True) # ¶
+			self.__reverse_stone([pos_x, pos_y], [-1, -1], True) # ¶ã
+			# ‹óƒ^ƒCƒ‹‚ªc‚Á‚Ä‚¢‚È‚¯‚ê‚ÎAŸÒ‚ğ”»’è‚µ‚ÄƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ğƒIƒ“‚É‚·‚é
+			if self.get_stone_count(self.get_active_player()) + self.get_stone_count(self.get_next_player()) == self.get_board_size() ** 2:
 				self.__decide_winner_player()
-				self.__end_flg = True
-			# ãƒ‘ã‚¹ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ•ã«ã™ã‚‹
+				self._game_end_flg = True
+			# ƒpƒXƒtƒ‰ƒO‚ğƒIƒt‚É‚·‚é
 			self.__pass_flg = False
-			# æ£‹è­œã‚’è¨˜éŒ²ã™ã‚‹
-			self.__game_record.append({'player' : self.__active_player, 'action' : sys._getframe().f_code.co_name , 'pos' : [pos_x, pos_y]})
-			# ã‚¿ãƒ¼ãƒ³ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’äº¤ä»£ã™ã‚‹
-			self.__change_turn()
-			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+			# Šû•ˆ‚ğ‹L˜^‚·‚é
+			self._push_game_record(sys._getframe().f_code.co_name, {'pos' : [pos_x, pos_y]})
+			# ƒ^[ƒ“ƒvƒŒƒCƒ„[‚ğŒğ‘ã‚·‚é
+			self._change_turn()
+			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'The specified position flipped some stones.'
 			return {'is_valid' : True, 'description' : description_str}
 		else:
-			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
-			return {'is_valid' : False, 'description' : result_dict['description']}
+			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+			return {'is_valid' : False, 'description' : action_result['description']}
 	
-	##public## ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šãƒ‘ã‚¹ã™ã‚‹
+	##public## ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FƒpƒX‚·‚é
 	def action_pass(self):
 		
-		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒONã®å ´åˆã€ä½•ã‚‚ã—ãªã„
-		if self.__end_flg == True:
-			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªON‚Ìê‡A‰½‚à‚µ‚È‚¢
+		if self.get_game_end_flg() == True:
+			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'This game has terminated.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# å„ã‚¿ã‚¤ãƒ«ã‚’ç¢ºèªã—ã€æœ‰åŠ¹æ‰‹ãŒæ®‹ã£ã¦ã„ã‚Œã°ä½•ã‚‚ã—ãªã„
-		for pos_x in range(self.__board_len_x):
-			for pos_y in range(self.__board_len_y):
+		# Šeƒ^ƒCƒ‹‚ğŠm”F‚µA—LŒøè‚ªc‚Á‚Ä‚¢‚ê‚Î‰½‚à‚µ‚È‚¢
+		for pos_x in range(self.get_board_size()):
+			for pos_y in range(self.get_board_size()):
 				if self.__validate_set_pos([pos_x, pos_y])['is_valid']:
-					# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+					# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 					description_str = 'Some valid position are left.'
 					return {'is_valid' : False, 'description' : description_str}
 		
-		# ãƒ‘ã‚¹ãŒé€£ç¶šã—ã¦ã„ã‚‹å ´åˆ
+		# ƒpƒX‚ª˜A‘±‚µ‚Ä‚¢‚éê‡
 		if self.__pass_flg == True:
-			# å‹è€…ã‚’åˆ¤å®šã—ã¦ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ³ã«ã™ã‚‹
+			# ŸÒ‚ğ”»’è‚µ‚ÄƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ğƒIƒ“‚É‚·‚é
 			self.__decide_winner_player()
-			self.__end_flg = True
+			self._game_end_flg = True
 			description_str = 'No valid position are left for any players.'
 		else:
-			# ãƒ‘ã‚¹ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ³ã«ã—ã€ã‚¿ãƒ¼ãƒ³ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’äº¤ä»£ã™ã‚‹
+			# ƒpƒXƒtƒ‰ƒO‚ğƒIƒ“‚É‚µAƒ^[ƒ“ƒvƒŒƒCƒ„[‚ğŒğ‘ã‚·‚é
 			self.__pass_flg = True
-			self.__change_turn()
+			self._change_turn()
 			description_str = 'Active player is changed.'
 		
-		# æ£‹è­œã‚’è¨˜éŒ²ã™ã‚‹
-		self.__game_record.append({'player' : self.__active_player, 'action' : sys._getframe().f_code.co_name})
-		# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# Šû•ˆ‚ğ‹L˜^‚·‚é
+		self._push_game_record(sys._getframe().f_code.co_name, {})
+		# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 		return {'is_valid' : True, 'description' : description_str}
 		
 		
-	##public## ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šæŠ•äº†ã™ã‚‹
+	##public## ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“F“Š—¹‚·‚é
 	def action_give_up(self):
-		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒONã®å ´åˆã€ä½•ã‚‚ã—ãªã„
-		if self.__end_flg == True:
-			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªON‚Ìê‡A‰½‚à‚µ‚È‚¢
+		if self.get_game_end_flg() == True:
+			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'This game has terminated.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å‹è€…ã¨ã—ã€ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ³ã«ã™ã‚‹
-		self.__winner_player = self.get_reverse_color(self.__active_player)
-		self.__end_flg = True
+		# ”ñƒAƒNƒeƒBƒuƒvƒŒƒCƒ„[‚ğŸÒ‚Æ‚µAƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ğƒIƒ“‚É‚·‚é
+		self._winner_player = self.get_next_player()
+		self._game_end_flg = True
 		
-		# æ£‹è­œã‚’è¨˜éŒ²ã™ã‚‹
-		self.__game_record.append({'player' : self.__active_player, 'action' : sys._getframe().f_code.co_name})
-		# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# Šû•ˆ‚ğ‹L˜^‚·‚é
+		self._push_game_record(sys._getframe().f_code.co_name, {})
+		
+		# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 		description_str = 'Active player gave up.'
 		return {'is_valid' : True, 'description' : description_str}
 	
-	##public## ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šå†æˆ¦ã™ã‚‹
+	##public## ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FÄí‚·‚é
 	def action_start_rematch(self):
-		
-		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒOFFã®å ´åˆã€ä½•ã‚‚ã—ãªã„
-		if self.__end_flg == False:
-			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªOFF‚Ìê‡A‰½‚à‚µ‚È‚¢
+		if self.get_game_end_flg() == False:
+			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 			description_str = 'This game is still going on.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# ã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹
-		board_size = self.__board_len_x
-		player1 = [self.__player_data[self.BLACK]['player_name'], self.__player_data[self.BLACK]['theme_color'], self.__player_data[self.BLACK]['theme_image']]
-		player2 = [self.__player_data[self.WHITE]['player_name'], self.__player_data[self.WHITE]['theme_color'], self.__player_data[self.WHITE]['theme_image']]
-		self.__init__(board_size, player1, player2)
+		# ƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚é
+		self._init_game()
 		
-		# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
+		# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
 		description_str = 'Next game started.'
 		return {'is_valid' : True, 'description' : description_str}
 
 
 ################################################################
-## å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹ã‚¯ãƒ©ã‚¹ï¼ˆåŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
+## ƒQ[ƒ€‰æ–Ê‚ğ•`‰æ‚·‚éƒNƒ‰ƒX
 ################################################################
-class EventControllerReversi:
-	
-	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
-	def __init__(self, obj, rect_dict, tile_size, sound_set, sound_error):
-		self._game_model  = obj
-		self._rect_dict   = rect_dict
-		self._tile_size   = tile_size
-		self._sound_set   = sound_set
-		self._sound_error = sound_error
-
-
-################################################################
-## ãƒ¦ãƒ¼ã‚¶ã‹ã‚‰ã®å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹ã‚¯ãƒ©ã‚¹
-################################################################
-class UserEventControllerReversi(EventControllerReversi):
-	
-	##ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ç¶™æ‰¿
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šæŒ‡å®šä½ç½®ãŒç¯„å›²å†…ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
-	def __validate_within_rect(self, specified_pos, rect_pos):
-		if (rect_pos['x'] < specified_pos[0] < rect_pos['x']+rect_pos['w']) and \
-		   (rect_pos['y'] < specified_pos[1] < rect_pos['y']+rect_pos['h']):
-			return True
-		else:
-			return False
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’å‡ºåŠ›ã™ã‚‹
-	def __output_reaction(self, result_dict):
-		if result_dict['is_valid']:
-			print_str = 'Action is valid : ' + result_dict['description']
-			self._sound_set.play()
-		else:
-			print_str = 'Action is invalid : ' + result_dict['description']
-			self._sound_error.play()
-		print(print_str)
-	
-	##private## æ£‹è­œã‚’ãƒ•ã‚¡ã‚¤ãƒ«å‡ºåŠ›ã™ã‚‹
-	def __write_game_record(self):
-		
-		# æ£‹è­œã‚’å–å¾—
-		game_record = self._game_model.get_game_record()
-		
-		# ç¾åœ¨æ™‚åˆ»ã‚’å–å¾—ã—ã¦ãƒ•ã‚¡ã‚¤ãƒ«åã‚’ç”Ÿæˆ
-		dt_now   = datetime.datetime.now()
-		filename = dt_now.strftime('%Y%m%d_%H%M%S') + '.json'
-		
-		# ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—
-		fw = open(filename, 'w')
-		json.dump(game_record, fw, indent=4)
-		
-		# æ¨™æº–å‡ºåŠ›
-		print(str(dt_now))
-		print(game_record)
-
-	##public## ãƒ¦ãƒ¼ã‚¶ã‹ã‚‰ã®å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹
-	def control_event(self):
-		for event in pygame.event.get():
-			
-			# é–‰ã˜ã‚‹ãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
-			if event.type == QUIT:
-				pygame.quit()
-				sys.exit()
-			
-			# å·¦ã‚¯ãƒªãƒƒã‚¯
-			if event.type == MOUSEBUTTONDOWN and event.button == 1:
-				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒãƒœãƒ¼ãƒ‰å†…ã®å ´åˆ
-				if self.__validate_within_rect(event.pos, self._rect_dict['board_area']):
-					# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ã‹ã‚‰ã‚¿ã‚¤ãƒ«åº§æ¨™ã‚’ç‰¹å®š
-					pos_x = floor(event.pos[0] / self._tile_size)
-					pos_y = floor(event.pos[1] / self._tile_size)
-					# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šçŸ³ã‚’è¨­ç½®ã™ã‚‹
-					result_dict = self._game_model.action_set_stone([pos_x, pos_y])
-					self.__output_reaction(result_dict)
-				
-				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒpassãƒœã‚¿ãƒ³å†…ã®å ´åˆ
-				if self.__validate_within_rect(event.pos, self._rect_dict['pass_button_area']):
-					# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šãƒ‘ã‚¹ã™ã‚‹
-					result_dict = self._game_model.action_pass()
-					self.__output_reaction(result_dict)
-				
-				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒgiveupãƒœã‚¿ãƒ³å†…ã®å ´åˆ
-				if self.__validate_within_rect(event.pos, self._rect_dict['giveup_button_area']):
-					# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šæŠ•äº†ã™ã‚‹
-					result_dict = self._game_model.action_give_up()
-					self.__output_reaction(result_dict)
-				
-				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒrematchãƒœã‚¿ãƒ³å†…ã®å ´åˆ
-				if self.__validate_within_rect(event.pos, self._rect_dict['rematch_button_area']):
-					# æ£‹è­œã‚’ãƒ•ã‚¡ã‚¤ãƒ«å‡ºåŠ›ã™ã‚‹
-					#self.__write_game_record()
-					# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šå†æˆ¦ã™ã‚‹
-					result_dict = self._game_model.action_start_rematch()
-					self.__output_reaction(result_dict)
-
-
-################################################################
-## CPUã‹ã‚‰ã®å…¥åŠ›ã‚’å—ã‘ä»˜ã‘ã‚‹ã‚¯ãƒ©ã‚¹
-################################################################
-class CpuEventControllerReversi(EventControllerReversi):
-	
-	##ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ç¶™æ‰¿
-	
-	##public## CPUã‹ã‚‰ã®å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹
-	def control_event(self):
-		# ã¾ãšãƒ‘ã‚¹ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚’è©¦ã™
-		result_dict = self._game_model.action_pass()
-		
-		# ãƒ‘ã‚¹ãŒã§ããªã‹ã£ãŸã‚‰ã€ã©ã“ã‹ã«ãŠã‘ã‚‹ã¾ã§ãƒ©ãƒ³ãƒ€ãƒ ã«è¨­ç½®ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚’ç¹°ã‚Šæ›¿ãˆã™
-		board_size = self._game_model.get_board_size()
-		while result_dict['is_valid']== False:
-			pos_x = random.randrange(0, board_size[0], 1)
-			pos_y = random.randrange(0, board_size[1], 1)
-			result_dict = self._game_model.action_set_stone([pos_x, pos_y])
-		
-		# ãƒ«ãƒ¼ãƒ—ã‚’æŠœã‘ãŸã‚‰ã€1å›åŠ¹æœéŸ³ã‚’é³´ã‚‰ã™
-		self._sound_set.play()
-
-
-################################################################
-## ã‚²ãƒ¼ãƒ ç”»é¢ã‚’æç”»ã™ã‚‹ã‚¯ãƒ©ã‚¹
-################################################################
-class ScreenViewReversi:
-	##private## ã‚¯ãƒ©ã‚¹å®šæ•°
+class ScreenViewReversi(svb.ScreenViewBase):
+	##private## ƒNƒ‰ƒX’è”
 	__COLOR_BACKGROUND       = (  0,   0,   0)
 	__COLOR_BOARD_BACKGROUND = (  0, 128,   0)
 	__COLOR_BOARD_LINE       = (  0,  96,   0)
 	__COLOR_TEXT_BACKGROUND  = (128, 128, 128)
 	__COLOR_DEFAULT_TEXT     = (  0,   0, 255)
 	
-	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
-	def __init__(self, obj, rect_dict, tile_size, font_size):
-		self.__game_model  = obj
-		self.__rect_dict   = rect_dict
+	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒI[ƒo[ƒ‰ƒCƒhj
+	def __init__(self, gm_obj, main_screen_rect, rect_dict, font_size, tile_size):
+		super().__init__(gm_obj, main_screen_rect, rect_dict, font_size)
 		self.__tile_size   = tile_size
 		self.__line_thick  = tile_size // 10
-		self.__smallfont   = pygame.font.SysFont(None, font_size)
-		self.__largefont   = pygame.font.SysFont(None, font_size * 2)
-		self.__main_screen = pygame.display.set_mode(self.__get_size(self.__rect_dict['main_screen']))
-		self.__sfc_dict    = {}
-		self.__sfc_dict['board_sfc']      = pygame.Surface(self.__get_size(self.__rect_dict['board_area']))
-		self.__sfc_dict['info_sfc']        = pygame.Surface(self.__get_size(self.__rect_dict['info_area']))
-		self.__sfc_dict['pass_btn_sfc']    = pygame.Surface(self.__get_size(self.__rect_dict['pass_button_area']))
-		self.__sfc_dict['giveup_btn_sfc']  = pygame.Surface(self.__get_size(self.__rect_dict['giveup_button_area']))
-		self.__sfc_dict['rematch_btn_sfc'] = pygame.Surface(self.__get_size(self.__rect_dict['rematch_button_area']))
 	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šrectå®šç¾©ã‹ã‚‰ä½ç½®ã‚’å–å¾—ã™ã‚‹
-	def __get_pos(self, rect):
-		return (rect['x'], rect['y'])
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šrectå®šç¾©ã‹ã‚‰ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹
-	def __get_size(self, rect):
-		return (rect['w'], rect['h'])
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šãƒœãƒ¼ãƒ‰ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
+	##private## “à•”ƒƒ\ƒbƒhFƒ{[ƒh—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
 	def __update_board_surface(self, target_sfc_idx):
-		target_sfc = self.__sfc_dict[target_sfc_idx]
-		# èƒŒæ™¯è‰²
+		target_sfc = self._sfc_dict[target_sfc_idx]
+		# ”wŒiF
 		target_sfc.fill(self.__COLOR_BOARD_BACKGROUND)
-		# ç›¤é¢
-		board_size = self.__game_model.get_board_size()
-		for pos_x in range(board_size[0]):
-			for pos_y in range(board_size[1]):
-				tile_status = self.__game_model.get_board_state([pos_x, pos_y])
+		# ”Õ–Ê
+		board_size = self._game_model.get_board_size()
+		for pos_x in range(board_size):
+			for pos_y in range(board_size):
+				tile_status = self._game_model.get_board_state([pos_x, pos_y])
 				tile_rect_pos = (pos_x*self.__tile_size, pos_y*self.__tile_size, self.__tile_size, self.__tile_size)
-				if tile_status != GameModelReversi.EMPTY:
-					image = self.__game_model.get_theme_image(tile_status)
-					if image != None:
+				if tile_status != None:
+					image = self._game_model.get_theme_image(tile_status)
+					if type(image) is pygame.Surface:
 						target_sfc.blit(image, (tile_rect_pos[0], tile_rect_pos[1]))
 					else:
-						pygame.draw.ellipse(target_sfc, self.__game_model.get_theme_color(tile_status), tile_rect_pos)
-		# æ ç·š
+						pygame.draw.ellipse(target_sfc, self._game_model.get_theme_color(tile_status), tile_rect_pos)
+		# ˜gü
 		for w in range(0, target_sfc.get_width(), self.__tile_size):
 			pygame.draw.line(target_sfc, self.__COLOR_BOARD_LINE, (w, 0), (w, target_sfc.get_height()))
 		for h in range(0, target_sfc.get_height(), self.__tile_size):
 			pygame.draw.line(target_sfc, self.__COLOR_BOARD_LINE, (0, h), (target_sfc.get_width(), h))
-		# ã‚²ãƒ¼ãƒ çµ‚äº†æ™‚ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
-		if self.__game_model.get_end_flg():
-			winner_player = self.__game_model.get_winner_player()
+		# ƒQ[ƒ€I—¹ƒƒbƒZ[ƒW
+		if self._game_model.get_game_end_flg():
+			winner_player = self._game_model.get_winner_player()
 			if winner_player != None:
-				game_end_str = 'Winner is ' + self.__game_model.get_player_name(winner_player) + ' !!'
-				game_end_font_color = self.__game_model.get_theme_color(winner_player)
+				game_end_str = 'Winner is ' + self._game_model.get_player_name(winner_player) + ' !!'
+				game_end_font_color = self._game_model.get_theme_color(winner_player)
 			else:
 				game_end_str = 'Draw !!'
 				game_end_font_color = self.__COLOR_DEFAULT_TEXT
-			game_end_msg  = self.__largefont.render(game_end_str, True, game_end_font_color, self.__COLOR_TEXT_BACKGROUND)
+			game_end_msg  = self._largefont.render(game_end_str, True, game_end_font_color, self.__COLOR_TEXT_BACKGROUND)
 			game_end_rect = game_end_msg.get_rect()
 			game_end_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
 			target_sfc.blit(game_end_msg, game_end_rect.topleft)
 	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šINFOæ¬„ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
+	##private## “à•”ƒƒ\ƒbƒhFINFO—“—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
 	def __update_info_surface(self, target_sfc_idx):
-		target_sfc = self.__sfc_dict[target_sfc_idx]
-		# èƒŒæ™¯è‰²
+		target_sfc = self._sfc_dict[target_sfc_idx]
+		# ”wŒiF
 		target_sfc.fill(self.__COLOR_BACKGROUND)
-		# çŸ©å½¢
+		# ‹éŒ`
 		sfc_rect = (self.__line_thick, self.__line_thick, \
 					target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
 		pygame.draw.rect(target_sfc, self.__COLOR_TEXT_BACKGROUND, sfc_rect)
-		# ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŠã‚ˆã³çŸ³æ•°
-		active_player = self.__game_model.get_active_player()
-		active_player_str = 'Turn : ' + self.__game_model.get_player_name(active_player)
-		black_cnt_str     = self.__game_model.get_player_name(GameModelReversi.BLACK) + ' : ' + str(self.__game_model.get_stone_count(GameModelReversi.BLACK))
-		white_cnt_str     = self.__game_model.get_player_name(GameModelReversi.WHITE) + ' : ' + str(self.__game_model.get_stone_count(GameModelReversi.WHITE))
-		active_player_msg = self.__smallfont.render(active_player_str, True, self.__game_model.get_theme_color(active_player))
-		black_cnt_msg     = self.__smallfont.render(black_cnt_str,     True, self.__game_model.get_theme_color(GameModelReversi.BLACK))
-		white_cnt_msg     = self.__smallfont.render(white_cnt_str,     True, self.__game_model.get_theme_color(GameModelReversi.WHITE))
+		# ƒAƒNƒeƒBƒuƒvƒŒƒCƒ„[
+		active_player = self._game_model.get_active_player()
+		active_player_str = 'Turn : ' + self._game_model.get_player_name(active_player)
+		active_player_msg = self._smallfont.render(active_player_str, True, self._game_model.get_theme_color(active_player))
 		active_player_msg_rect = active_player_msg.get_rect()
-		black_cnt_msg_rect     = black_cnt_msg.get_rect()
-		white_cnt_msg_rect     = white_cnt_msg.get_rect()
 		active_player_msg_rect.midleft = (self.__tile_size*(1/2), self.__tile_size*1)
-		black_cnt_msg_rect.midleft     = (self.__tile_size*(1/2), self.__tile_size*2)
-		white_cnt_msg_rect.midleft     = (self.__tile_size*(1/2), self.__tile_size*3)
 		target_sfc.blit(active_player_msg, active_player_msg_rect.topleft)
-		target_sfc.blit(black_cnt_msg, black_cnt_msg_rect.topleft)
-		target_sfc.blit(white_cnt_msg, white_cnt_msg_rect.topleft)
-	
-	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šãƒœã‚¿ãƒ³ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
+		# Î”
+		for n in range(self._game_model.get_num_of_players()):
+			block_count_str = self._game_model.get_player_name(n) + ' : ' + str(self._game_model.get_stone_count(n))
+			block_count_msg = self._smallfont.render(block_count_str, True, self._game_model.get_theme_color(n))
+			block_count_msg_rect = block_count_msg.get_rect()
+			block_count_msg_rect.midleft = (self.__tile_size*(1/2), self.__tile_size*(n+2))
+			target_sfc.blit(block_count_msg, block_count_msg_rect.topleft)
+			
+	##private## “à•”ƒƒ\ƒbƒhFƒ{ƒ^ƒ“—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
 	def __update_button_surface(self, target_sfc_idx, txt_str):
-		target_sfc = self.__sfc_dict[target_sfc_idx]
-		# èƒŒæ™¯è‰²
+		target_sfc = self._sfc_dict[target_sfc_idx]
+		# ”wŒiF
 		target_sfc.fill(self.__COLOR_BACKGROUND)
-		# çŸ©å½¢
+		# ‹éŒ`
 		sfc_rect = (self.__line_thick, self.__line_thick, \
 					target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
 		pygame.draw.rect(target_sfc, self.__COLOR_TEXT_BACKGROUND, sfc_rect)
-		# ãƒ†ã‚­ã‚¹ãƒˆ
-		txt_msg = self.__smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT)
+		# ƒeƒLƒXƒg
+		txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT)
 		txt_msg_rect = txt_msg.get_rect()
 		txt_msg_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
-		# æç”»
+		# •`‰æ
 		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
 	
-	##public## ã‚²ãƒ¼ãƒ ç”»é¢ã‚’ç”Ÿæˆã™ã‚‹
+	##public## ƒQ[ƒ€‰æ–Ê‚ğ¶¬‚·‚é
 	def draw_view(self):
 		
-		# ãƒœãƒ¼ãƒ‰ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
-		self.__update_board_surface('board_sfc')
+		# ƒ{[ƒh‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		self.__update_board_surface('board_area')
 		
-		# INFOæ¬„ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
-		self.__update_info_surface('info_sfc')
+		# INFO—“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		self.__update_info_surface('info_area')
 		
-		# passãƒœã‚¿ãƒ³ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
-		self.__update_button_surface('pass_btn_sfc', '< Pass >')
+		# passƒ{ƒ^ƒ“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		self.__update_button_surface('pass_button_area', '< Pass >')
 		
-		# giveupãƒœã‚¿ãƒ³ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
-		self.__update_button_surface('giveup_btn_sfc', '< Give up >')
+		# giveupƒ{ƒ^ƒ“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		self.__update_button_surface('giveup_button_area', '< Give up >')
 		
-		# ã‚²ãƒ¼ãƒ çµ‚äº†æ™‚ã®ã¿
-		if self.__game_model.get_end_flg():
-			# rematchãƒœã‚¿ãƒ³ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
-			self.__update_button_surface('rematch_btn_sfc', '< Start rematch >')
+		# ƒQ[ƒ€I—¹‚Ì‚İ
+		if self._game_model.get_game_end_flg():
+			# rematchƒ{ƒ^ƒ“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+			self.__update_button_surface('rematch_button_area', '< Start rematch >')
 		
-		# å…¨ä½“ç”»é¢ã¸ã®è²¼ã‚Šä»˜ã‘
-		self.__main_screen.blit(self.__sfc_dict['board_sfc']      , self.__get_pos(self.__rect_dict['board_area']))
-		self.__main_screen.blit(self.__sfc_dict['info_sfc']       , self.__get_pos(self.__rect_dict['info_area']))
-		self.__main_screen.blit(self.__sfc_dict['pass_btn_sfc']   , self.__get_pos(self.__rect_dict['pass_button_area']))
-		self.__main_screen.blit(self.__sfc_dict['giveup_btn_sfc'] , self.__get_pos(self.__rect_dict['giveup_button_area']))
-		self.__main_screen.blit(self.__sfc_dict['rematch_btn_sfc'], self.__get_pos(self.__rect_dict['rematch_button_area']))
+		# ‘S‘Ì‰æ–Ê‚Ö‚Ì“\‚è•t‚¯
+		self._blit_main_screen()
+
+
+################################################################
+## ƒ†[ƒU‚©‚ç‚Ì“ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚éƒNƒ‰ƒX
+################################################################
+class UserEventControllerReversi(ecb.EventControllerBase):
+	
+	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒI[ƒo[ƒ‰ƒCƒhj
+	def __init__(self, gm_obj, sv_obj, sound_dict, tile_size):
+		super().__init__(gm_obj, sv_obj, sound_dict)
+		self._tile_size = tile_size
+	
+	##public## ƒ†[ƒU‚©‚ç‚Ì“ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚é
+	def control_event(self):
+		for event in pygame.event.get():
+			
+			# •Â‚¶‚éƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+			if event.type == QUIT:
+				pygame.quit()
+				sys.exit()
+			
+			# ¶ƒNƒŠƒbƒN
+			if event.type == MOUSEBUTTONDOWN and event.button == 1:
+				# ƒNƒŠƒbƒNˆÊ’u‚ªƒ{[ƒh“à‚Ìê‡
+				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['board_area']):
+					# ƒNƒŠƒbƒNˆÊ’u‚©‚çƒ^ƒCƒ‹À•W‚ğ“Á’è
+					pos_x = event.pos[0] // self._tile_size
+					pos_y = event.pos[1] // self._tile_size
+					# ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FÎ‚ğİ’u‚·‚é
+					action_result = self._game_model.action_set_stone([pos_x, pos_y])
+					self._output_reaction(action_result)
+				
+				# ƒNƒŠƒbƒNˆÊ’u‚ªpassƒ{ƒ^ƒ““à‚Ìê‡
+				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['pass_button_area']):
+					# ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FƒpƒX‚·‚é
+					action_result = self._game_model.action_pass()
+					self._output_reaction(action_result)
+				
+				# ƒNƒŠƒbƒNˆÊ’u‚ªgiveupƒ{ƒ^ƒ““à‚Ìê‡
+				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['giveup_button_area']):
+					# ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“F“Š—¹‚·‚é
+					action_result = self._game_model.action_give_up()
+					self._output_reaction(action_result)
+				
+				# ƒNƒŠƒbƒNˆÊ’u‚ªrematchƒ{ƒ^ƒ““à‚Ìê‡
+				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['rematch_button_area']):
+					# Šû•ˆ‚ğƒtƒ@ƒCƒ‹o—Í‚·‚é
+					#self._write_game_record()
+					# ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FÄí‚·‚é
+					action_result = self._game_model.action_start_rematch()
+					self._output_reaction(action_result)
+
+
+################################################################
+## CPU‚©‚ç‚Ì“ü—Í‚ğó‚¯•t‚¯‚éƒNƒ‰ƒX
+################################################################
+class CpuEventControllerReversi(ecb.EventControllerBase):
+	
+	##public## CPU‚©‚ç‚Ì“ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚é
+	def control_event(self):
+		
+		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªOFF‚Ìê‡
+		if self._game_model.get_game_end_flg() == False:
+			
+			# ‚Ü‚¸ƒpƒXƒAƒNƒVƒ‡ƒ“‚ğ‚·
+			action_result = self._game_model.action_pass()
+			
+			# ƒpƒX‚ª‚Å‚«‚È‚©‚Á‚½‚çA‚Ç‚±‚©‚É‚¨‚¯‚é‚Ü‚Åƒ‰ƒ“ƒ_ƒ€‚Éİ’uƒAƒNƒVƒ‡ƒ“‚ğŒJ‚è•Ô‚·
+			board_size = self._game_model.get_board_size()
+			while action_result['is_valid']== False:
+				pos_x = random.randrange(0, board_size, 1)
+				pos_y = random.randrange(0, board_size, 1)
+				action_result = self._game_model.action_set_stone([pos_x, pos_y])
+			
+			# ƒ‹[ƒv‚ğ”²‚¯‚½‚çA1‰ñŒø‰Ê‰¹‚ğ–Â‚ç‚·
+			if type(self._sound_dict['valid']) is pygame.mixer.Sound:
+				self._sound_dict['valid'].play()
+
 
