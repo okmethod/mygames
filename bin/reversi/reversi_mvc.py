@@ -226,21 +226,6 @@ class GameModelReversi(gmb.GameModelBase):
 		# アクションの結果を返却する
 		description_str = 'Active player gave up.'
 		return {'is_valid' : True, 'description' : description_str}
-	
-	##public## プレイヤーアクション：再戦する
-	def action_start_rematch(self):
-		# ゲーム終了フラグがOFFの場合、何もしない
-		if self.get_game_end_flg() == False:
-			# アクションの結果を返却する
-			description_str = 'This game is still going on.'
-			return {'is_valid' : False, 'description' : description_str}
-		
-		# ゲーム状態を初期化する
-		self._init_game()
-		
-		# アクションの結果を返却する
-		description_str = 'Next game started.'
-		return {'is_valid' : True, 'description' : description_str}
 
 
 ################################################################
