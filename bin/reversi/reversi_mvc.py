@@ -18,7 +18,7 @@ class GameModelReversi(gmb.GameModelBase):
 	##private## コンストラクタ（オーバーライド）
 	def __init__(self, player_list, board_size):
 		super().__init__(player_list)
-		# プレイヤー情報に石の数を追加
+		# プレイヤー情報に石の数を追加する
 		for p in self._player_data:
 			p['stone_count'] = 0
 		# 盤面を保持する二次元リスト（空：None、石：player_listのインデックス値）
@@ -26,7 +26,7 @@ class GameModelReversi(gmb.GameModelBase):
 		self.__board_state = [[None for pos_x in range(self.__board_size)] for pos_y in range(self.__board_size)]
 		# 前回実行したアクションがパスであったことを保持するフラグ
 		self.__pass_flg = False
-		# 初期配置の石を設置
+		# ゲーム状態を初期化する
 		self._init_game()
 	
 	##public## getter：ボードサイズを取得する
@@ -39,12 +39,13 @@ class GameModelReversi(gmb.GameModelBase):
 		return self.__board_state[pos_y][pos_x]
 	
 	##public## getter：指定プレイヤーの石数を取得する
-	def get_stone_count(self, c):
-		return self._player_data[c]['stone_count']
+	def get_stone_count(self, player):
+		return self._player_data[player]['stone_count']
 	
 	##private## 内部メソッド：ゲーム状態を初期化する（オーバーライド）
 	def _init_game(self):
 		super()._init_game()
+		self._active_player = 0
 		board_size = self.get_board_size()
 		self.__board_state = [[None for pos_x in range(self.__board_size)] for pos_y in range(self.__board_size)]
 		self.__board_state[board_size//2][board_size//2]     = self.get_next_player()
@@ -53,16 +54,6 @@ class GameModelReversi(gmb.GameModelBase):
 		self.__board_state[board_size//2-1][board_size//2-1] = self.get_next_player()
 		self._player_data[self.get_active_player()]['stone_count'] = 2
 		self._player_data[self.get_next_player()]['stone_count'] = 2
-		
-	
-	##private## 内部メソッド：勝利プレイヤーを判定して更新する
-	def __decide_winner_player(self):
-		if self.get_stone_count(self.get_active_player()) > self.get_stone_count(self.get_next_player()):
-			self._winner_player = self.get_active_player()
-		elif self.get_stone_count(self.get_active_player()) < self.get_stone_count(self.get_next_player()):
-			self._winner_player = self.get_next_player()
-		else:
-			self._winner_player = None
 	
 	##private## 内部メソッド：石を反転する(またはシミュレーションする)
 	def __reverse_stone(self, pos, dir, update_flg):
@@ -167,7 +158,7 @@ class GameModelReversi(gmb.GameModelBase):
 			self.__reverse_stone([pos_x, pos_y], [-1, -1], True) # 左上
 			# 空タイルが残っていなければ、勝者を判定してゲーム終了フラグをオンにする
 			if self.get_stone_count(self.get_active_player()) + self.get_stone_count(self.get_next_player()) == self.get_board_size() ** 2:
-				self.__decide_winner_player()
+				self._decide_winner_player('stone_count')
 				self._game_end_flg = True
 			# パスフラグをオフにする
 			self.__pass_flg = False
@@ -202,7 +193,7 @@ class GameModelReversi(gmb.GameModelBase):
 		# パスが連続している場合
 		if self.__pass_flg == True:
 			# 勝者を判定してゲーム終了フラグをオンにする
-			self.__decide_winner_player()
+			self._decide_winner_player('stone_count')
 			self._game_end_flg = True
 			description_str = 'No valid position are left for any players.'
 		else:
@@ -342,7 +333,6 @@ class ScreenViewReversi(svb.ScreenViewBase):
 		txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT)
 		txt_msg_rect = txt_msg.get_rect()
 		txt_msg_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
-		# 描画
 		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
 	
 	##public## ゲーム画面を生成する
