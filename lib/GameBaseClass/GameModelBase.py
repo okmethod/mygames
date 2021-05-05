@@ -40,16 +40,16 @@ class GameModelBase():
 		return self._winner_player
 	
 	##public## getter：指定プレイヤーのプレイヤー名を取得する
-	def get_player_name(self, c):
-		return self._player_data[c]['player_name']
+	def get_player_name(self, player):
+		return self._player_data[player]['player_name']
 	
 	##public## getter：指定プレイヤーのテーマカラーを取得する
-	def get_theme_color(self, c):
-		return self._player_data[c]['theme_color']
+	def get_theme_color(self, player):
+		return self._player_data[player]['theme_color']
 	
 	##public## getter：指定プレイヤーのテーマ画像を取得する
-	def get_theme_image(self, c):
-		return self._player_data[c]['theme_image']
+	def get_theme_image(self, player):
+		return self._player_data[player]['theme_image']
 	
 	##public## getter：ゲームが終了しているかどうかを確認する
 	def get_game_end_flg(self):
@@ -61,10 +61,28 @@ class GameModelBase():
 	
 	##private## 内部メソッド：ゲーム状態を初期化する
 	def _init_game(self):
-		self._active_player = 0
 		self._winner_player = None
 		self._game_end_flg  = False
 		self._game_record = []
+	
+	##private## 内部メソッド：勝利プレイヤーを判定して更新する
+	def _decide_winner_player(self, key):
+		# 勝利点が最大のプレイヤーを特定
+		victory_point_list = []
+		for p in self._player_data:
+			if type(p[key]) is int:
+				victory_point = p[key]
+			elif (type(p[key]) is list) or (type(p[key]) is dict):
+				victory_point = len(p[key])
+			else:
+				victory_point = p[key].get_len()
+			victory_point_list.append(victory_point)
+		# 最大プレイヤーが1名のみの場合、勝者とする
+		top_player_list = [i for i, v in enumerate(victory_point_list) if v == max(victory_point_list)]
+		if len(top_player_list) == 1:
+			self._winner_player = top_player_list[0]
+		else:
+			self._winner_player = None
 	
 	##private## 内部メソッド：棋譜に追記する
 	def _push_game_record(self, action, action_detail):
