@@ -1,3 +1,5 @@
 # git登録対象外ファイル
+bin/*/*.bat
 bin/*/__pycache__/*.pyc
 lib/*/__pycache__/*.pyc
+media/wav/Windows*.wav

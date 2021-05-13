@@ -15,7 +15,7 @@ BUTTON_SIZE_W  = 4	# ボタン横幅のタイル数
 # プレイヤー情報の定義
 PLAYER1_NAME  = 'BLACK'
 PLAYER1_COLOR = (  0,   0,   0)
-PLAYER2_NAME  = 'CHIHARU'
+PLAYER2_NAME  = 'CHI-CHAN'
 PLAYER2_COLOR = (255, 192, 192)
 
 # 読み込みファイルパス
