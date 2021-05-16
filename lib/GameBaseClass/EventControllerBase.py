@@ -3,20 +3,20 @@ import datetime
 import pygame
 
 ################################################################
-## “ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚éƒNƒ‰ƒXiŠî’êƒNƒ‰ƒXj
+## å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹ã‚¯ãƒ©ã‚¹ï¼ˆåŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
 ################################################################
 class EventControllerBase:
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	def __init__(self, gm_obj, sv_obj, sound_dict):
-		# GameModelƒIƒuƒWƒFƒNƒg
+		# GameModelã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 		self._game_model  = gm_obj
-		# ScreenViewƒIƒuƒWƒFƒNƒg
+		# ScreenViewã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 		self._screen_view = sv_obj
-		# ƒTƒEƒ“ƒhƒGƒtƒFƒNƒg‚ğ•Û‚·‚éƒfƒBƒNƒVƒ‡ƒiƒŠ
+		# ã‚µã‚¦ãƒ³ãƒ‰ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’ä¿æŒã™ã‚‹ãƒ‡ã‚£ã‚¯ã‚·ãƒ§ãƒŠãƒª
 		self._sound_dict  = sound_dict
 	
-	##private## “à•”ƒƒ\ƒbƒhFw’èˆÊ’u‚ª”ÍˆÍ“à‚©‚Ç‚¤‚©‚ğ”»’è‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šæŒ‡å®šä½ç½®ãŒç¯„å›²å†…ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹
 	def _validate_within_rect(self, specified_pos, rect_pos):
 		if (rect_pos.left < specified_pos[0] < rect_pos.left + rect_pos.w) and \
 		   (rect_pos.top  < specified_pos[1] < rect_pos.top  + rect_pos.h):
@@ -24,7 +24,7 @@ class EventControllerBase:
 		else:
 			return False
 	
-	##private## “à•”ƒƒ\ƒbƒhFƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğo—Í‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’å‡ºåŠ›ã™ã‚‹
 	def _output_reaction(self, action_result):
 		if action_result['is_valid']:
 			print_str = 'Action is valid : ' + action_result['description']
@@ -36,25 +36,25 @@ class EventControllerBase:
 				self._sound_dict['invalid'].play()
 		print(print_str)
 	
-	##private## Šû•ˆ‚ğƒtƒ@ƒCƒ‹o—Í‚·‚é
+	##private## æ£‹è­œã‚’ãƒ•ã‚¡ã‚¤ãƒ«å‡ºåŠ›ã™ã‚‹
 	def _write_game_record(self):
 		
-		# Šû•ˆ‚ğæ“¾
+		# æ£‹è­œã‚’å–å¾—
 		game_record = self._game_model.get_game_record()
 		
-		# Œ»İ‚ğæ“¾‚µ‚Äƒtƒ@ƒCƒ‹–¼‚ğ¶¬
+		# ç¾åœ¨æ™‚åˆ»ã‚’å–å¾—ã—ã¦ãƒ•ã‚¡ã‚¤ãƒ«åã‚’ç”Ÿæˆ
 		dt_now   = datetime.datetime.now()
 		filename = dt_now.strftime('%Y%m%d_%H%M%S') + '.json'
 		
-		# ƒtƒ@ƒCƒ‹‘‚«o‚µ
+		# ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—
 		fw = open(filename, 'w')
 		json.dump(game_record, fw, indent=4)
 		
-		# •W€o—Í
+		# æ¨™æº–å‡ºåŠ›
 		print(str(dt_now))
 		print(game_record)
 	
-	##public## “ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚éi—vƒI[ƒo[ƒ‰ƒCƒhj
+	##public## å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹ï¼ˆè¦ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def control_event(self):
 		pass
 

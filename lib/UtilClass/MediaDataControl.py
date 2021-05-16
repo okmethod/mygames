@@ -2,11 +2,11 @@ import os
 import pygame
 
 ################################################################
-## pygame‚Ìmediaƒtƒ@ƒCƒ‹‚ğˆµ‚¤ƒNƒ‰ƒXiŠî’êƒNƒ‰ƒXj
+## pygameã®mediaãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ‰±ã†ã‚¯ãƒ©ã‚¹ï¼ˆåŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
 ################################################################
 class MediaData:
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	def __init__(self, dirpath, filename):
 		self._dirpath  = dirpath
 		self._filename = filename
@@ -15,11 +15,11 @@ class MediaData:
 		self.is_exist()
 		self.load_file()
 	
-	##public## mediaƒf[ƒ^‚ğæ“¾‚·‚é
+	##public## mediaãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹
 	def get_data(self):
 		return self._data
 	
-	##public## ƒtƒ@ƒCƒ‹‚Ì‘¶İŠm”F‚ğ‚·‚é
+	##public## ãƒ•ã‚¡ã‚¤ãƒ«ã®å­˜åœ¨ç¢ºèªã‚’ã™ã‚‹
 	def is_exist(self):
 		if (type(self._dirpath) is str) and (type(self._filename) is str):
 			self._filepath = os.path.join(self._dirpath, self._filename)
@@ -30,16 +30,16 @@ class MediaData:
 		else:
 			return False
 	
-	##public## ƒtƒ@ƒCƒ‹‚ğƒ[ƒh‚·‚éi—vƒI[ƒo[ƒ‰ƒCƒhj
+	##public## ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ï¼ˆè¦ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def load_file(self):
 		pass
 
 ################################################################
-## ‰æ‘œƒtƒ@ƒCƒ‹
+## ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«
 ################################################################
 class ImageData(MediaData):
 	
-	##public## ‰æ‘œƒtƒ@ƒCƒ‹‚ğƒ[ƒh‚·‚éiƒI[ƒo[ƒ‰ƒCƒhj
+	##public## ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ï¼ˆã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def load_file(self):
 		if self.is_exist():
 			self._data = pygame.image.load(self._filepath)
@@ -47,14 +47,14 @@ class ImageData(MediaData):
 		else:
 			return None
 	
-	##public## ‰æ‘œƒtƒ@ƒCƒ‹‚ğƒŠƒTƒCƒY‚µ‚Ä•Ô‹p‚·‚é
+	##public## ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒªã‚µã‚¤ã‚ºã—ã¦è¿”å´ã™ã‚‹
 	def get_resized_data(self, size):
 		if self._data != None:
 			return pygame.transform.scale(self._data, size)
 		else:
 			return None
 	
-	##public## ‰æ‘œƒtƒ@ƒCƒ‹‚ğ•¶š—ñŒ`®‚É•ÏŠ·‚µ‚Ä•Ô‹p‚·‚é
+	##public## ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ–‡å­—åˆ—å½¢å¼ã«å¤‰æ›ã—ã¦è¿”å´ã™ã‚‹
 	def to_string(self, size, format):
 		if self._data != None:
 			return pygame.image.tostring(pygame.transform.scale(self._data, size), format)
@@ -63,11 +63,11 @@ class ImageData(MediaData):
 
 
 ################################################################
-## ‰¹ºƒtƒ@ƒCƒ‹
+## éŸ³å£°ãƒ•ã‚¡ã‚¤ãƒ«
 ################################################################
 class SoundData(MediaData):
 	
-	##public## ‰¹ºƒtƒ@ƒCƒ‹‚ğƒ[ƒh‚·‚éiƒI[ƒo[ƒ‰ƒCƒhj
+	##public## éŸ³å£°ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ­ãƒ¼ãƒ‰ã™ã‚‹ï¼ˆã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def load_file(self):
 		if self.is_exist():
 			self._data = pygame.mixer.Sound(self._filepath)

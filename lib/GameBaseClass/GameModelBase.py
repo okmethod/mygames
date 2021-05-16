@@ -1,33 +1,33 @@
 
 ################################################################
-## ƒQ[ƒ€‚Ìƒ‹[ƒ‹/ó‘Ô‚ğŠÇ—‚·‚éƒNƒ‰ƒXiŠî’êƒNƒ‰ƒXj
+## ã‚²ãƒ¼ãƒ ã®ãƒ«ãƒ¼ãƒ«/çŠ¶æ…‹ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹ï¼ˆåŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
 ################################################################
 class GameModelBase():
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^FƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚é
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼šã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹
 	def __init__(self, player_list):
-		# ƒvƒŒƒCƒ„[î•ñ‚ğ•Û‚·‚éƒŠƒXƒg
+		# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã‚’ä¿æŒã™ã‚‹ãƒªã‚¹ãƒˆ
 		self._player_data = []
 		for i, p in enumerate(player_list):
 			self._player_data.append({'player_name' : p['player_name'], 'theme_color' : p['theme_color'], 'theme_image' : p['theme_image']})
-		# ƒAƒNƒeƒBƒuƒvƒŒƒCƒ„[‚ğ•Û‚·‚é•Ï”
+		# ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ä¿æŒã™ã‚‹å¤‰æ•°
 		self._active_player = None
-		# Ÿ—˜ƒvƒŒƒCƒ„[‚ğ•Û‚·‚é•Ï”
+		# å‹åˆ©ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ä¿æŒã™ã‚‹å¤‰æ•°
 		self._winner_player = None
-		# ƒQ[ƒ€‚ªI—¹‚µ‚½‚©‚ğ•Û‚·‚éƒtƒ‰ƒO
+		# ã‚²ãƒ¼ãƒ ãŒçµ‚äº†ã—ãŸã‹ã‚’ä¿æŒã™ã‚‹ãƒ•ãƒ©ã‚°
 		self._game_end_flg  = False
-		# Šû•ˆ‚ğ•Û‚·‚éƒŠƒXƒg
+		# æ£‹è­œã‚’ä¿æŒã™ã‚‹ãƒªã‚¹ãƒˆ
 		self._game_record = []
 	
-	##public## getterFƒvƒŒƒCƒ„[”‚ğæ“¾‚·‚é
+	##public## getterï¼šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ•°ã‚’å–å¾—ã™ã‚‹
 	def get_num_of_players(self):
 		return len(self._player_data)
 	
-	##public## getterFƒAƒNƒeƒBƒuƒvƒŒƒCƒ„[‚ğæ“¾‚·‚é
+	##public## getterï¼šã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—ã™ã‚‹
 	def get_active_player(self):
 		return self._active_player
 	
-	##public## getterFŸ‚ÌƒvƒŒƒCƒ„[‚ğæ“¾‚·‚é
+	##public## getterï¼šæ¬¡ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—ã™ã‚‹
 	def get_next_player(self):
 		temp = self._active_player + 1
 		if temp < len(self._player_data):
@@ -35,39 +35,39 @@ class GameModelBase():
 		else:
 			return 0
 	
-	##public## getterFŸ—˜ƒvƒŒƒCƒ„[‚ğæ“¾‚·‚é
+	##public## getterï¼šå‹åˆ©ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å–å¾—ã™ã‚‹
 	def get_winner_player(self):
 		return self._winner_player
 	
-	##public## getterFw’èƒvƒŒƒCƒ„[‚ÌƒvƒŒƒCƒ„[–¼‚ğæ“¾‚·‚é
+	##public## getterï¼šæŒ‡å®šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åã‚’å–å¾—ã™ã‚‹
 	def get_player_name(self, player):
 		return self._player_data[player]['player_name']
 	
-	##public## getterFw’èƒvƒŒƒCƒ„[‚Ìƒe[ƒ}ƒJƒ‰[‚ğæ“¾‚·‚é
+	##public## getterï¼šæŒ‡å®šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ†ãƒ¼ãƒã‚«ãƒ©ãƒ¼ã‚’å–å¾—ã™ã‚‹
 	def get_theme_color(self, player):
 		return self._player_data[player]['theme_color']
 	
-	##public## getterFw’èƒvƒŒƒCƒ„[‚Ìƒe[ƒ}‰æ‘œ‚ğæ“¾‚·‚é
+	##public## getterï¼šæŒ‡å®šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ†ãƒ¼ãƒç”»åƒã‚’å–å¾—ã™ã‚‹
 	def get_theme_image(self, player):
 		return self._player_data[player]['theme_image']
 	
-	##public## getterFƒQ[ƒ€‚ªI—¹‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğŠm”F‚·‚é
+	##public## getterï¼šã‚²ãƒ¼ãƒ ãŒçµ‚äº†ã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’ç¢ºèªã™ã‚‹
 	def get_game_end_flg(self):
 		return self._game_end_flg
 	
-	##public## getterFŠû•ˆ‚ğæ“¾‚·‚é
+	##public## getterï¼šæ£‹è­œã‚’å–å¾—ã™ã‚‹
 	def get_game_record(self):
 		return self._game_record
 	
-	##private## “à•”ƒƒ\ƒbƒhFƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹
 	def _init_game(self):
 		self._winner_player = None
 		self._game_end_flg  = False
 		self._game_record = []
 	
-	##private## “à•”ƒƒ\ƒbƒhFŸ—˜ƒvƒŒƒCƒ„[‚ğ”»’è‚µ‚ÄXV‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šå‹åˆ©ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’åˆ¤å®šã—ã¦æ›´æ–°ã™ã‚‹
 	def _decide_winner_player(self, key):
-		# Ÿ—˜“_‚ªÅ‘å‚ÌƒvƒŒƒCƒ„[‚ğ“Á’è
+		# å‹åˆ©ç‚¹ãŒæœ€å¤§ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ç‰¹å®š
 		victory_point_list = []
 		for p in self._player_data:
 			if type(p[key]) is int:
@@ -77,14 +77,14 @@ class GameModelBase():
 			else:
 				victory_point = p[key].get_len()
 			victory_point_list.append(victory_point)
-		# Å‘åƒvƒŒƒCƒ„[‚ª1–¼‚Ì‚İ‚Ìê‡AŸÒ‚Æ‚·‚é
+		# æœ€å¤§ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒ1åã®ã¿ã®å ´åˆã€å‹è€…ã¨ã™ã‚‹
 		top_player_list = [i for i, v in enumerate(victory_point_list) if v == max(victory_point_list)]
 		if len(top_player_list) == 1:
 			self._winner_player = top_player_list[0]
 		else:
 			self._winner_player = None
 	
-	##private## “à•”ƒƒ\ƒbƒhFŠû•ˆ‚É’Ç‹L‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šæ£‹è­œã«è¿½è¨˜ã™ã‚‹
 	def _push_game_record(self, action, action_detail):
 		action_log = {}
 		action_log['player'] = self._active_player
@@ -92,22 +92,22 @@ class GameModelBase():
 		action_log.update(action_detail)
 		self._game_record.append(action_log)
 	
-	##private## “à•”ƒƒ\ƒbƒhFƒAƒNƒeƒBƒuƒvƒŒƒCƒ„[‚ğŒğ‘ã‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’äº¤ä»£ã™ã‚‹
 	def _change_turn(self):
 		self._active_player = self.get_next_player()
 	
-	##public## ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FÄí‚·‚é
+	##public## ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šå†æˆ¦ã™ã‚‹
 	def action_start_rematch(self):
-		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªOFF‚Ìê‡A‰½‚à‚µ‚È‚¢
+		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒOFFã®å ´åˆã€ä½•ã‚‚ã—ãªã„
 		if self.get_game_end_flg() == False:
-			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
 			description_str = 'This game is still going on.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# ƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚é
+		# ã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹
 		self._init_game()
 		
-		# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+		# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
 		description_str = 'Next game started.'
 		return {'is_valid' : True, 'description' : description_str}
 

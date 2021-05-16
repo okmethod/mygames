@@ -1,26 +1,26 @@
 
-# pygameƒEƒBƒ“ƒhƒE‚ÌƒLƒƒƒvƒVƒ‡ƒ“
+# pygameã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚­ãƒ£ãƒ—ã‚·ãƒ§ãƒ³
 PYGAME_CAPTION = 'REVERSI'
 
-# ”’l‚Ì’è‹`
+# æ•°å€¤ã®å®šç¾©
 FPS            = 15	# frame per second
-FONT_SIZE      = 24	# ƒtƒHƒ“ƒgƒTƒCƒY
-TILE_SIZE      = 50	# 1ƒ^ƒCƒ‹‚Ì•
-BOARD_SIZE     = 8	# ƒ{[ƒh‚Ì1•Ó‚Ìƒ^ƒCƒ‹”(‹ô”„§)
-INFO_SIZE_H    = 4	# INFO—“c•‚Ìƒ^ƒCƒ‹”
-INFO_SIZE_W    = 4	# INFO—“‰¡•‚Ìƒ^ƒCƒ‹”
-BUTTON_SIZE_H  = 1	# ƒ{ƒ^ƒ“c•‚Ìƒ^ƒCƒ‹”
-BUTTON_SIZE_W  = 4	# ƒ{ƒ^ƒ“‰¡•‚Ìƒ^ƒCƒ‹”
+FONT_SIZE      = 24	# ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚º
+TILE_SIZE      = 50	# 1ã‚¿ã‚¤ãƒ«ã®å¹…
+BOARD_SIZE     = 8	# ãƒœãƒ¼ãƒ‰ã®1è¾ºã®ã‚¿ã‚¤ãƒ«æ•°(å¶æ•°æŽ¨å¥¨)
+INFO_SIZE_H    = 4	# INFOæ¬„ç¸¦å¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+INFO_SIZE_W    = 4	# INFOæ¬„æ¨ªå¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+BUTTON_SIZE_H  = 1	# ãƒœã‚¿ãƒ³ç¸¦å¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+BUTTON_SIZE_W  = 4	# ãƒœã‚¿ãƒ³æ¨ªå¹…ã®ã‚¿ã‚¤ãƒ«æ•°
 
-# ƒvƒŒƒCƒ„[î•ñ‚Ì’è‹`
+# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã®å®šç¾©
 PLAYER1_NAME  = 'Black'
 PLAYER1_COLOR = (  0,   0,   0)
 PLAYER2_NAME  = 'White'
 PLAYER2_COLOR = (255, 255, 255)
 
-# “Ç‚Ýž‚Ýƒtƒ@ƒCƒ‹ƒpƒX
+# èª­ã¿è¾¼ã¿ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹
 WAV_FILENAME_VALID     = 'Windows Navigation Start.wav'
 WAV_FILENAME_INVALID   = 'Windows Critical Stop.wav'
-IMAGE_FILEPATH_PLAYER1 = None # ‰æ‘œ‚ðŽg—p‚µ‚È‚¢ê‡‚ÍNone‚ðÝ’è
-IMAGE_FILEPATH_PLAYER2 = None # ‰æ‘œ‚ðŽg—p‚µ‚È‚¢ê‡‚ÍNone‚ðÝ’è
+IMAGE_FILEPATH_PLAYER1 = None # ç”»åƒã‚’ä½¿ç”¨ã—ãªã„å ´åˆã¯Noneã‚’è¨­å®š
+IMAGE_FILEPATH_PLAYER2 = None # ç”»åƒã‚’ä½¿ç”¨ã—ãªã„å ´åˆã¯Noneã‚’è¨­å®š
 

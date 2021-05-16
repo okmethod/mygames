@@ -1,25 +1,25 @@
 
-# pygameƒEƒBƒ“ƒhƒE‚ÌƒLƒƒƒvƒVƒ‡ƒ“
+# pygameã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚­ãƒ£ãƒ—ã‚·ãƒ§ãƒ³
 PYGAME_CAPTION = 'BOZU-MEKURI'
 
-# ”’l‚Ì’è‹`
+# æ•°å€¤ã®å®šç¾©
 FPS              = 15	# frame per second
-FONT_SIZE        = 24	# ƒtƒHƒ“ƒgƒTƒCƒY
-TILE_SIZE        = 100	# 1ƒ^ƒCƒ‹‚Ì•
-COMMON_F_SIZE_H  = 3	# ‹¤’ÊƒtƒB[ƒ‹ƒhc•‚Ìƒ^ƒCƒ‹”
-COMMON_F_SIZE_W  = 8	# ‹¤’ÊƒtƒB[ƒ‹ƒh‰¡•‚Ìƒ^ƒCƒ‹”
-PLAYER_F_SIZE_H  = 3	# ŒÂlƒtƒB[ƒ‹ƒhc•‚Ìƒ^ƒCƒ‹”
-PLAYER_F_SIZE_W  = 2	# ŒÂlƒtƒB[ƒ‹ƒh‰¡•‚Ìƒ^ƒCƒ‹”
-INFO_SIZE_H      = 4	# INFO—“c•‚Ìƒ^ƒCƒ‹”
-INFO_SIZE_W      = 4	# INFO—“‰¡•‚Ìƒ^ƒCƒ‹”
-BUTTON_SIZE_H    = 1	# ƒ{ƒ^ƒ“c•‚Ìƒ^ƒCƒ‹”
-BUTTON_SIZE_W    = 4	# ƒ{ƒ^ƒ“‰¡•‚Ìƒ^ƒCƒ‹”
+FONT_SIZE        = 24	# ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚º
+TILE_SIZE        = 100	# 1ã‚¿ã‚¤ãƒ«ã®å¹…
+COMMON_F_SIZE_H  = 3	# å…±é€šãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ç¸¦å¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+COMMON_F_SIZE_W  = 8	# å…±é€šãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰æ¨ªå¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+PLAYER_F_SIZE_H  = 3	# å€‹äººãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ç¸¦å¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+PLAYER_F_SIZE_W  = 2	# å€‹äººãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰æ¨ªå¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+INFO_SIZE_H      = 4	# INFOæ¬„ç¸¦å¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+INFO_SIZE_W      = 4	# INFOæ¬„æ¨ªå¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+BUTTON_SIZE_H    = 1	# ãƒœã‚¿ãƒ³ç¸¦å¹…ã®ã‚¿ã‚¤ãƒ«æ•°
+BUTTON_SIZE_W    = 4	# ãƒœã‚¿ãƒ³æ¨ªå¹…ã®ã‚¿ã‚¤ãƒ«æ•°
 
-# ƒJ[ƒh‚ÌƒTƒCƒY
+# ã‚«ãƒ¼ãƒ‰ã®ã‚µã‚¤ã‚º
 CARD_SIZE_W = TILE_SIZE
 CARD_SIZE_H = TILE_SIZE*3//2
 
-# ƒvƒŒƒCƒ„[î•ñ‚Ì’è‹`
+# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã®å®šç¾©
 PLAYER1_NAME  = 'RED'
 PLAYER1_COLOR = (192,   0,   0)
 PLAYER2_NAME  = 'BLUE'
@@ -29,7 +29,7 @@ PLAYER3_COLOR = (  0, 192,   0)
 PLAYER4_NAME  = 'WHITE'
 PLAYER4_COLOR = (192, 192, 192)
 
-# “Ç‚Ýž‚Ýƒtƒ@ƒCƒ‹ƒpƒX
+# èª­ã¿è¾¼ã¿ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹
 CARD_CATALOG_FILENAME = './hundred_poems.csv'
 
 MEDIA_SOUND_DIRPATH   = '../../media/wav'
