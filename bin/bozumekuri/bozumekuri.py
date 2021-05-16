@@ -1,4 +1,5 @@
 import sys
+import csv
 import pygame
 
 # 自作クラスのパス
@@ -7,20 +8,6 @@ sys.path.append('../../lib/UtilClass')
 import bozumekuri_conf as conf
 import bozumekuri_mvc  as mvc
 import MediaDataControl as media
-
-# mediaファイルのパス
-MEDIA_SOUND_DIRPATH = '../../media/wav'
-MEDIA_IMAGE_DIRPATH = '../../media/png'
-
-spec_list = [ \
-				[0, 'maro', 'tono', 'erai', None, None], \
-				[1, 'muro', 'tono', 'erai', None, None], \
-				[2, 'erena', 'hime', 'kawai', None, None], \
-				[3, 'sofia', 'hime', 'kawai', None, None], \
-				[4, 'nick', 'bozu', 'haratatsu', None, None]
-			]
-
-deck_recipe = [[0,5],[1,5],[2,5],[3,5],[4,3]]
 
 
 ################################################################
@@ -36,17 +23,18 @@ def main():
 	
 	# 音声ファイルのロード
 	sound_dict = {}
-	sound_dict['valid']   = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_VALID).get_data()
-	sound_dict['invalid'] = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_INVALID).get_data()
-	sound_dict['tono']    = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_TONO).get_data()
-	sound_dict['hime']    = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_HIME).get_data()
-	sound_dict['bozu']    = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_BOZU).get_data()
-	
+	sound_dict['valid']   = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_VALID).get_data()
+	sound_dict['invalid'] = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_INVALID).get_data()
+	sound_dict['tono']    = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_TONO).get_data()
+	sound_dict['hime']    = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_HIME).get_data()
+	sound_dict['bozu']    = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_BOZU).get_data()
 	
 	# 画像ファイルのロード
 	image_dict = {}
-	#image_dict['player1'] = media.ImageData(MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_PLAYER1).get_resized_data((conf.TILE_SIZE,conf.TILE_SIZE))
-	#image_dict['player2'] = media.ImageData(MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_PLAYER2).get_resized_data((conf.TILE_SIZE,conf.TILE_SIZE))
+	image_dict['back'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_BACK).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['tono'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_TONO).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['hime'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_HIME).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['bozu'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_BOZU).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
 	
 	# プレイヤーの定義
 	player_list = []
@@ -54,6 +42,23 @@ def main():
 	player_list.append({'player_name' : conf.PLAYER2_NAME, 'theme_color' : conf.PLAYER2_COLOR, 'theme_image' : None})
 	player_list.append({'player_name' : conf.PLAYER3_NAME, 'theme_color' : conf.PLAYER3_COLOR, 'theme_image' : None})
 	player_list.append({'player_name' : conf.PLAYER4_NAME, 'theme_color' : conf.PLAYER4_COLOR, 'theme_image' : None})
+	
+	# カードカタログのロード
+	csv_file = open(conf.CARD_CATALOG_FILENAME, 'r', encoding='utf_8', errors='', newline='' )
+	reader = csv.DictReader(csv_file, delimiter=',', doublequote=True, lineterminator='\r\n', quotechar='"', skipinitialspace=True)
+	card_catalog = list(reader)
+	# カードカタログへの画像データの設定
+	for card_spec in card_catalog:
+		card_spec['image_size_w'] = conf.CARD_SIZE_W
+		card_spec['image_size_h'] = conf.CARD_SIZE_H
+		card_spec['image_format'] = 'RGBA'
+		card_spec['image_front']  = image_dict[card_spec['type']]
+		card_spec['image_back']   = image_dict['back']
+	
+	# デッキレシピの生成（各1枚ずつ）
+	deck_recipe = []
+	for card_spec in card_catalog:
+		deck_recipe.append([card_spec['id'], 1])
 	
 	# 各種エリアの位置/サイズ指定
 	rect_dict = {}
@@ -64,7 +69,7 @@ def main():
 		conf.TILE_SIZE * conf.COMMON_F_SIZE_H
 	)
 	rect_dict['player_field_area'] = []
-	for n in range(conf.NUM_OF_PLAYERS):
+	for n in range(len(player_list)):
 		rect_dict['player_field_area'].append(pygame.Rect( \
 			conf.TILE_SIZE * conf.PLAYER_F_SIZE_W * n, \
 			rect_dict['common_field_area'].h, \
@@ -97,7 +102,7 @@ def main():
 	)
 	
 	# ゲームのルール/状態を管理するオブジェクト
-	game_model = mvc.GameModelBozumekuri(player_list, spec_list, deck_recipe)
+	game_model = mvc.GameModelBozumekuri(player_list, card_catalog, deck_recipe)
 	
 	# ゲーム画面を描画するオブジェクト
 	screen_view = mvc.ScreenViewBozumekuri(game_model, main_screen_rect, rect_dict, conf.FONT_SIZE, conf.TILE_SIZE)

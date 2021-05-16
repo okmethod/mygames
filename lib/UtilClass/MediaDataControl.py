@@ -35,7 +35,7 @@ class MediaData:
 		pass
 
 ################################################################
-## 画像ファイル（pygame上はSurfaceとして扱われる）
+## 画像ファイル
 ################################################################
 class ImageData(MediaData):
 	
@@ -53,6 +53,14 @@ class ImageData(MediaData):
 			return pygame.transform.scale(self._data, size)
 		else:
 			return None
+	
+	##public## 画像ファイルを文字列形式に変換して返却する
+	def to_string(self, size, format):
+		if self._data != None:
+			return pygame.image.tostring(pygame.transform.scale(self._data, size), format)
+		else:
+			return None
+
 
 ################################################################
 ## 音声ファイル

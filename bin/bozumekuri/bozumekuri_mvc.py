@@ -3,7 +3,7 @@ import random
 import pygame
 from pygame.locals import QUIT, MOUSEBUTTONDOWN
 
-# ©ìƒNƒ‰ƒX‚ÌƒpƒX
+# è‡ªä½œã‚¯ãƒ©ã‚¹ã®ãƒ‘ã‚¹
 sys.path.append('../../lib/GameBaseClass')
 sys.path.append('../../lib/UtilClass')
 
@@ -13,165 +13,189 @@ import EventControllerBase as ecb
 import ScreenViewBase as svb
 
 ################################################################
-## –Vå‚ß‚­‚è‚Ìƒ‹[ƒ‹/ó‘Ô‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+## åŠä¸»ã‚ãã‚Šã®ãƒ«ãƒ¼ãƒ«/çŠ¶æ…‹ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
 ################################################################
 class GameModelBozumekuri(gmb.GameModelBase):
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒI[ƒo[ƒ‰ƒCƒhj
-	def __init__(self, player_list, spec_list, deck_recipe):
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼ˆã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
+	def __init__(self, player_list, card_catalog, deck_recipe):
 		super().__init__(player_list)
-		# ƒvƒŒƒCƒ„[î•ñ‚ÉèDƒJ[ƒhƒŠƒXƒg‚ğ’Ç‰Á‚·‚é
+		# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã«æ‰‹æœ­ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã‚’è¿½åŠ ã™ã‚‹
 		for p in self._player_data:
-			p['card_hand'] = cc.CardDeck()
-		# ƒJ[ƒhƒ}ƒXƒ^
-		self.__card_master = cc.CardMaster(cc.Card, spec_list)
-		# ƒfƒbƒLƒŒƒVƒs
+			p['card_hand'] = cc.CardDeck(cc.Card)
+		# ã‚«ãƒ¼ãƒ‰ã‚«ã‚¿ãƒ­ã‚°
+		self.__card_catalog = card_catalog
+		# ãƒ‡ãƒƒã‚­ãƒ¬ã‚·ãƒ”
 		self.__deck_recipe = deck_recipe
-		# RDƒJ[ƒhƒŠƒXƒg
-		self.__card_library = cc.CardDeck()
-		# ÌDƒJ[ƒhƒŠƒXƒg
-		self.__card_graveyard = cc.CardDeck()
-		# ƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚é
+		# å±±æœ­ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆ
+		self.__card_library = cc.CardDeck(cc.Card)
+		# æ¨æœ­ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆ
+		self.__card_graveyard = cc.CardDeck(cc.Card)
+		# ã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹
 		self._init_game()
 	
-	##public## getterFRD‚Ì–‡”‚ğæ“¾‚·‚é
+	##public## getterï¼šå±±æœ­ã®æšæ•°ã‚’å–å¾—ã™ã‚‹
 	def get_number_of_library_cards(self):
 		return self.__card_library.get_number_of_cards()
 	
-	##public## getterFÌD‚Ì–‡”‚ğæ“¾‚·‚é
+	##public## getterï¼šæ¨æœ­ã®æšæ•°ã‚’å–å¾—ã™ã‚‹
 	def get_number_of_graveyard_cards(self):
 		return self.__card_graveyard.get_number_of_cards()
 	
-	##public## getterFw’èƒvƒŒƒCƒ„[‚ÌèD‚Ì–‡”‚ğæ“¾‚·‚é
+	##public## getterï¼šæŒ‡å®šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ‰‹æœ­ã®æšæ•°ã‚’å–å¾—ã™ã‚‹
 	def get_number_of_hands(self, player):
 		return self._player_data[player]['card_hand'].get_number_of_cards()
 	
-	##public## getterFÌD‚ÌƒŠƒXƒg‚ğæ“¾‚·‚é
+	##public## getterï¼šå±±æœ­ã®ãƒˆãƒƒãƒ—ã‚«ãƒ¼ãƒ‰ã‚’å‚ç…§ã™ã‚‹ã€€â€»æœ¬æ¥ã¯è£é¢ç”»åƒã—ã‹å‚ç…§ã§ããªã„ã¯ãš
+	def get_library_top_card(self):
+		return self.__card_library.peep_card()
+	
+	##public## getterï¼šæ¨æœ­ã®ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã‚’å–å¾—ã™ã‚‹
 	def get_graveyard_cards(self):
-		return self.__card_graveyard.get_card_deck()
+		return self.__card_graveyard
 	
-	##public## getterFw’èƒvƒŒƒCƒ„[‚ÌèD‚ÌƒŠƒXƒg‚ğæ“¾‚·‚é
+	##public## getterï¼šæŒ‡å®šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ‰‹æœ­ã®ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã‚’å–å¾—ã™ã‚‹ã€€â€»æœ¬æ¥ã¯è‡ªåˆ†ã®æ‰‹æœ­ã—ã‹å‚ç…§ã§ããªã„ã¯ãš
 	def get_player_hands(self, c):
-		return self._player_data[c]['card_hand'].get_card_deck()
+		return self._player_data[c]['card_hand']
 	
-	##private## “à•”ƒƒ\ƒbƒhFƒQ[ƒ€ó‘Ô‚ğ‰Šú‰»‚·‚éiƒI[ƒo[ƒ‰ƒCƒhj
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚²ãƒ¼ãƒ çŠ¶æ…‹ã‚’åˆæœŸåŒ–ã™ã‚‹ï¼ˆã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def _init_game(self):
 		super()._init_game()
 		for p in self._player_data:
-			p['card_hand'] = cc.CardDeck()
-		self.__card_library = cc.CardDeck(self.__card_master, self.__deck_recipe)
+			p['card_hand'] = cc.CardDeck(cc.Card)
+		self.__card_library = cc.CardDeck(cc.Card, self.__card_catalog, self.__deck_recipe)
 		self.__card_library.shuffle_cards()
+		self.__card_graveyard = cc.CardDeck(cc.Card)
 		self._active_player = 0
 	
-	##private## “à•”ƒƒ\ƒbƒhFƒJ[ƒhƒ^ƒCƒv‚É‰‚¶‚ÄƒCƒxƒ“ƒg‚ğŒˆ’è‚µA‰ğŒˆ‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ã«å¿œã˜ã¦ã‚¤ãƒ™ãƒ³ãƒˆã‚’æ±ºå®šã—ã€è§£æ±ºã™ã‚‹
 	def __resolve_card_event(self, player, card):
-		# ƒJ[ƒhƒ^ƒCƒv‚ªu“av‚Ìê‡
-		if card.get_card_type() == 'tono':
-			# “–ŠYƒJ[ƒh‚ğ‘ÎÛƒvƒŒƒCƒ„[‚ÌèD‚É‰Á‚¦‚é
+		# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€Œæ®¿ã€ã®å ´åˆ
+		if card.get_type() == 'tono':
+			# å½“è©²ã‚«ãƒ¼ãƒ‰ã‚’å¯¾è±¡ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ‰‹æœ­ã«åŠ ãˆã‚‹
 			self._player_data[player]['card_hand'].push_card(card)
 			description_str = 'Your card is TONO. You got this card.'
-			return {'is_valid' : True, 'description' : description_str, 'card_event' : card.get_card_type()}
+			return {'is_valid' : True, 'description' : description_str, 'card_event' : card.get_type()}
 			
-		# ƒJ[ƒhƒ^ƒCƒv‚ªu•Pv‚Ìê‡
-		elif card.get_card_type() == 'hime':
-			# ÌD‚ğ‚·‚×‚Ä‘ÎÛƒvƒŒƒCƒ„[‚ÌèD‚É‰Á‚¦‚é
+		# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€Œå§«ã€ã®å ´åˆ
+		elif card.get_type() == 'hime':
+			# æ¨æœ­ã‚’ã™ã¹ã¦å¯¾è±¡ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ‰‹æœ­ã«åŠ ãˆã‚‹
 			c = self.__card_graveyard.pop_card()
 			while c != None:
 				self._player_data[player]['card_hand'].push_card(c)
 				c = self.__card_graveyard.pop_card()
-			# “–ŠYƒJ[ƒh‚ğ‘ÎÛƒvƒŒƒCƒ„[‚ÌèD‚É‰Á‚¦‚é
+			# å½“è©²ã‚«ãƒ¼ãƒ‰ã‚’å¯¾è±¡ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ‰‹æœ­ã«åŠ ãˆã‚‹
 			self._player_data[player]['card_hand'].push_card(card)
 			description_str = 'Your card is HIME. You got this card and anything in graveyard.'
-			return {'is_valid' : True, 'description' : description_str, 'card_event' : card.get_card_type()}
+			return {'is_valid' : True, 'description' : description_str, 'card_event' : card.get_type()}
 			
-		# ƒJ[ƒhƒ^ƒCƒv‚ªu–Våv‚Ìê‡
-		elif card.get_card_type() == 'bozu':
-			# ‘ÎÛƒvƒŒƒCƒ„[‚ÌèD‚ğ‚·‚×‚ÄÌD‚É‚·‚é
+		# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€ŒåŠä¸»ã€ã®å ´åˆ
+		elif card.get_type() == 'bozu':
+			# å¯¾è±¡ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ‰‹æœ­ã‚’ã™ã¹ã¦æ¨æœ­ã«ã™ã‚‹
 			c = self._player_data[player]['card_hand'].pop_card()
 			while c != None:
 				self.__card_graveyard.push_card(c)
 				c = self._player_data[player]['card_hand'].pop_card()
-			# “–ŠYƒJ[ƒh‚ğÌD‚É‚·‚é
+			# å½“è©²ã‚«ãƒ¼ãƒ‰ã‚’æ¨æœ­ã«ã™ã‚‹
 			self.__card_graveyard.push_card(card)
-			# ”»’èŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+			# åˆ¤å®šçµæœã‚’è¿”å´ã™ã‚‹
 			description_str = 'Your card is BOZU. You lost everything.'
-			return {'is_valid' : True, 'description' : description_str, 'card_event' : card.get_card_type()}
+			return {'is_valid' : True, 'description' : description_str, 'card_event' : card.get_type()}
 			
-		# ƒJ[ƒhƒ^ƒCƒv‚ªu•s–¾v‚Ìê‡
+		# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€Œä¸æ˜ã€ã®å ´åˆ
 		else:
-			# ”»’èŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+			# åˆ¤å®šçµæœã‚’è¿”å´ã™ã‚‹
 			description_str = 'Your card is unknown.'
-			return {'is_valid' : False, 'description' : description_str, 'card_event' : card.get_card_type()}
+			return {'is_valid' : False, 'description' : description_str, 'card_event' : card.get_type()}
 	
-	##public## ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FRD‚©‚ç1–‡ˆø‚­
+	##public## ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šå±±æœ­ã‹ã‚‰1æšå¼•ã
 	def action_draw_card(self):
-		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªON‚Ìê‡A‰½‚à‚µ‚È‚¢
+		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒONã®å ´åˆã€ä½•ã‚‚ã—ãªã„
 		if self.get_game_end_flg() == True:
-			# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+			# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
 			description_str = 'This game has terminated.'
 			return {'is_valid' : False, 'description' : description_str}
 		
-		# RD‚©‚çˆê–‡ˆø‚«Aˆø‚¢‚½ƒJ[ƒh‚É‰‚¶‚½ˆ—‚ğ‚·‚é
-		draw_card = self.__card_library.pop_card(0)
+		# å±±æœ­ã‹ã‚‰ä¸€æšå¼•ãã€å¼•ã„ãŸã‚«ãƒ¼ãƒ‰ã«å¿œã˜ãŸå‡¦ç†ã‚’ã™ã‚‹
+		draw_card = self.__card_library.pop_card()
 		resolution_result = self.__resolve_card_event(self.get_active_player(), draw_card)
 		
-		# RD‚ÉƒJ[ƒh‚ªc‚Á‚Ä‚¢‚È‚¯‚ê‚ÎAŸÒ‚ğ”»’è‚µ‚ÄƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ğƒIƒ“‚É‚·‚é
+		# å±±æœ­ã«ã‚«ãƒ¼ãƒ‰ãŒæ®‹ã£ã¦ã„ãªã‘ã‚Œã°ã€å‹è€…ã‚’åˆ¤å®šã—ã¦ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ã‚’ã‚ªãƒ³ã«ã™ã‚‹
 		if self.get_number_of_library_cards() == 0:
 			self._decide_winner_player('card_hand')
 			self._game_end_flg = True
-		# Šû•ˆ‚ğ‹L˜^‚·‚é
+		# æ£‹è­œã‚’è¨˜éŒ²ã™ã‚‹
 		self._push_game_record(sys._getframe().f_code.co_name, {'draw_card' : draw_card})
-		# ƒ^[ƒ“ƒvƒŒƒCƒ„[‚ğŒğ‘ã‚·‚é
+		# ã‚¿ãƒ¼ãƒ³ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’äº¤ä»£ã™ã‚‹
 		self._change_turn()
-		# ƒAƒNƒVƒ‡ƒ“‚ÌŒ‹‰Ê‚ğ•Ô‹p‚·‚é
+		# ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®çµæœã‚’è¿”å´ã™ã‚‹
 		return {'is_valid' : resolution_result['is_valid'], 'description' : resolution_result['description'], 'card_event' : resolution_result['card_event']}
 
 
 ################################################################
-## ƒQ[ƒ€‰æ–Ê‚ğ•`‰æ‚·‚éƒNƒ‰ƒX
+## ã‚²ãƒ¼ãƒ ç”»é¢ã‚’æç”»ã™ã‚‹ã‚¯ãƒ©ã‚¹
 ################################################################
 class ScreenViewBozumekuri(svb.ScreenViewBase):
-	##private## ƒNƒ‰ƒX’è”
+	##private## ã‚¯ãƒ©ã‚¹å®šæ•°
 	__COLOR_BACKGROUND       = (  0,   0,   0)
 	__COLOR_BOARD_BACKGROUND = (  0, 128,   0)
 	__COLOR_BOARD_LINE       = (  0,  96,   0)
 	__COLOR_TEXT_BACKGROUND  = (128, 128, 128)
 	__COLOR_DEFAULT_TEXT     = (  0,   0,   0)
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒI[ƒo[ƒ‰ƒCƒhj
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼ˆã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def __init__(self, gm_obj, main_screen_rect, rect_dict, font_size, tile_size):
 		super().__init__(gm_obj, main_screen_rect, rect_dict, font_size)
 		self.__tile_size   = tile_size
 		self.__line_thick  = tile_size // 10
+		self.__info_card   = None
 	
-	##private## “à•”ƒƒ\ƒbƒhF‹¤’ÊƒtƒB[ƒ‹ƒh—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+	##public## setterï¼šINFOæ¬„ã«è¡¨ç¤ºã™ã‚‹ã‚«ãƒ¼ãƒ‰ã‚’è¨­å®šã™ã‚‹
+	def set_info_card(self, card):
+		self.__info_card = card
+	
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šå…±é€šãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 	def __update_common_field_surface(self, target_sfc_idx):
 		target_sfc = self._sfc_dict[target_sfc_idx]
-		# ”wŒiF
+		# èƒŒæ™¯è‰²
 		target_sfc.fill(self.__COLOR_BOARD_BACKGROUND)
-		# ƒeƒLƒXƒgFRD–‡”
-		txt_str = str(self._game_model.get_number_of_library_cards())
+		
+		# å±±æœ­æšæ•°ï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
+		number_of_library_cards = self._game_model.get_number_of_library_cards()
+		txt_str = str(number_of_library_cards)
 		txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
 		txt_msg_rect = txt_msg.get_rect()
 		txt_msg_rect.center = (target_sfc.get_width()//4 * 1, self._smallfont.get_height() )
 		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
-		# ƒeƒLƒXƒgFÌD–‡”
+		# å±±æœ­ãƒˆãƒƒãƒ—ã‚«ãƒ¼ãƒ‰ï¼ˆç”»åƒï¼‰
+		if number_of_library_cards > 0:
+			top_card = self._game_model.get_library_top_card()
+			card_image = pygame.image.fromstring(top_card.get_image_back(), top_card.get_image_size(), top_card.get_image_format())
+			card_image_rect = card_image.get_rect()
+			card_image_rect.center = (target_sfc.get_width()//4 * 1, target_sfc.get_height()//2 )
+			target_sfc.blit(card_image, card_image_rect.topleft)
+		# æ¨æœ­æšæ•°ï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
 		number_of_graveyard_cards = self._game_model.get_number_of_graveyard_cards()
 		txt_str = str(number_of_graveyard_cards)
 		txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
 		txt_msg_rect = txt_msg.get_rect()
 		txt_msg_rect.center = (target_sfc.get_width()//4 * 3, self._smallfont.get_height() )
 		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
-		# ƒeƒLƒXƒgFƒgƒbƒvƒJ[ƒh
+		# æ¨æœ­ãƒˆãƒƒãƒ—ã‚«ãƒ¼ãƒ‰
 		if number_of_graveyard_cards > 0:
-			txt_str = self._game_model.get_graveyard_cards()[number_of_graveyard_cards-1].get_card_name()
-		else:
-			txt_str = ''
-		txt_msg = self._largefont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
-		txt_msg_rect = txt_msg.get_rect()
-		txt_msg_rect.center = (target_sfc.get_width()//4 * 3, self._largefont.get_height()*2 )
-		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
-		# ƒQ[ƒ€I—¹ƒƒbƒZ[ƒW
+			# ç”»åƒ
+			top_card = self._game_model.get_graveyard_cards().peep_card()
+			card_image = pygame.image.fromstring(top_card.get_image_front(), top_card.get_image_size(), top_card.get_image_format())
+			card_image_rect = card_image.get_rect()
+			card_image_rect.center = (target_sfc.get_width()//4 * 3, target_sfc.get_height()//2 )
+			target_sfc.blit(card_image, card_image_rect.topleft)
+			# ãƒ†ã‚­ã‚¹ãƒˆ
+			txt_str = top_card.get_name()
+			txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
+			txt_msg_rect = txt_msg.get_rect()
+			txt_msg_rect.center = (target_sfc.get_width()//4 * 3, target_sfc.get_height()//4 * 3)
+			target_sfc.blit(txt_msg, txt_msg_rect.topleft)
+		# ã‚²ãƒ¼ãƒ çµ‚äº†æ™‚ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
 		if self._game_model.get_game_end_flg():
 			winner_player = self._game_model.get_winner_player()
 			if winner_player != None:
@@ -184,187 +208,214 @@ class ScreenViewBozumekuri(svb.ScreenViewBase):
 			game_end_rect = game_end_msg.get_rect()
 			game_end_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
 			target_sfc.blit(game_end_msg, game_end_rect.topleft)
-		
 	
-	##private## “à•”ƒƒ\ƒbƒhFŒÂlƒtƒB[ƒ‹ƒh—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šå€‹äººãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 	def __update_player_field_surface(self, target_sfc_idx):
 		for i, target_sfc in enumerate(self._sfc_dict[target_sfc_idx]):
-			# ”wŒiF
+			# èƒŒæ™¯è‰²
 			target_sfc.fill(self.__COLOR_BACKGROUND)
-			# ‹éŒ`
+			# çŸ©å½¢
 			sfc_rect = (self.__line_thick, self.__line_thick, \
 						target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
 			pygame.draw.rect(target_sfc, self._game_model.get_theme_color(i), sfc_rect)
-			# ƒeƒLƒXƒgFèD–‡”
+			# æ‰‹æœ­æšæ•°ï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
 			number_of_hands = self._game_model.get_number_of_hands(i)
 			txt_str = str(number_of_hands)
 			txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
 			txt_msg_rect = txt_msg.get_rect()
 			txt_msg_rect.center = (target_sfc.get_width()//2, self._smallfont.get_height() )
 			target_sfc.blit(txt_msg, txt_msg_rect.topleft)
-			# ƒeƒLƒXƒgFƒgƒbƒvƒJ[ƒh
+			# æ‰‹æœ­ãƒˆãƒƒãƒ—ã‚«ãƒ¼ãƒ‰
 			if number_of_hands > 0:
-				txt_str = self._game_model.get_player_hands(i)[number_of_hands-1].get_card_name()
-			else:
-				txt_str = ''
-			txt_msg = self._largefont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
-			txt_msg_rect = txt_msg.get_rect()
-			txt_msg_rect.center = (target_sfc.get_width()//2, self._largefont.get_height()*2 )
-			target_sfc.blit(txt_msg, txt_msg_rect.topleft)
-			# ƒeƒLƒXƒgFƒvƒŒ[ƒ„[–¼
+				# ç”»åƒ
+				top_card = self._game_model.get_player_hands(i).peep_card()
+				card_image = pygame.image.fromstring(top_card.get_image_front(), top_card.get_image_size(), top_card.get_image_format())
+				card_image_rect = card_image.get_rect()
+				card_image_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2 )
+				target_sfc.blit(card_image, card_image_rect.topleft)
+				# ãƒ†ã‚­ã‚¹ãƒˆ
+				txt_str = top_card.get_name()
+				txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
+				txt_msg_rect = txt_msg.get_rect()
+				txt_msg_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//4 * 3)
+				target_sfc.blit(txt_msg, txt_msg_rect.topleft)
+			# ãƒ—ãƒ¬ãƒ¼ãƒ¤ãƒ¼åï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
 			txt_str = self._game_model.get_player_name(i)
 			txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
 			txt_msg_rect = txt_msg.get_rect()
 			txt_msg_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()-self._smallfont.get_height() )
 			target_sfc.blit(txt_msg, txt_msg_rect.topleft)
 	
-	##private## “à•”ƒƒ\ƒbƒhFINFO—“—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šINFOæ¬„ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 	def __update_info_surface(self, target_sfc_idx):
 		target_sfc = self._sfc_dict[target_sfc_idx]
-		# ”wŒiF
+		# èƒŒæ™¯è‰²
 		target_sfc.fill(self.__COLOR_BACKGROUND)
-		# ‹éŒ`
+		# çŸ©å½¢
 		sfc_rect = (self.__line_thick, self.__line_thick, \
 					target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
 		pygame.draw.rect(target_sfc, self.__COLOR_TEXT_BACKGROUND, sfc_rect)
-		# ƒAƒNƒeƒBƒuƒvƒŒƒCƒ„[
+		# ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
 		active_player = self._game_model.get_active_player()
-		active_player_str = 'Turn : ' + self._game_model.get_player_name(active_player)
-		active_player_msg = self._smallfont.render(active_player_str, True, self._game_model.get_theme_color(active_player))
-		active_player_msg_rect = active_player_msg.get_rect()
-		active_player_msg_rect.midleft = (self.__tile_size*(1/2), self.__tile_size*1)
-		target_sfc.blit(active_player_msg, active_player_msg_rect.topleft)
+		txt_str = 'Turn : ' + self._game_model.get_player_name(active_player)
+		txt_msg = self._smallfont.render(txt_str, True, self._game_model.get_theme_color(active_player))
+		txt_msg_rect = txt_msg.get_rect()
+		txt_msg_rect.midleft = (self.__tile_size//2, self.__tile_size//2)
+		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
+		# ã‚«ãƒ¼ãƒ‰æƒ…å ±
+		if self.__info_card != None:
+			info_card_name = self.__info_card.get_name()
+			info_card_description = self.__info_card.get_description()
+			# æ­Œäººåï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
+			txt_str = 'ã€Š ' + info_card_name + ' ã€‹'
+			txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
+			txt_msg_rect = txt_msg.get_rect()
+			txt_msg_rect.midleft = (self.__line_thick, self.__tile_size)
+			target_sfc.blit(txt_msg, txt_msg_rect.topleft)
+			# å¥ï¼ˆãƒ†ã‚­ã‚¹ãƒˆï¼‰
+			y = self.__tile_size
+			for sentence in info_card_description.split('ã€€'):
+				y += self._smallfont.get_height()
+				x = self.__tile_size//4
+				for words in sentence.split(' '):
+					y += self._smallfont.get_height()
+					x += self.__tile_size//4
+					txt_str = words
+					txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT, self.__COLOR_TEXT_BACKGROUND)
+					txt_msg_rect = txt_msg.get_rect()
+					txt_msg_rect.midleft = (x, y)
+					target_sfc.blit(txt_msg, txt_msg_rect.topleft)
 	
-	##private## “à•”ƒƒ\ƒbƒhFƒ{ƒ^ƒ“—pƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šãƒœã‚¿ãƒ³ç”¨ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 	def __update_button_surface(self, target_sfc_idx, txt_str):
 		target_sfc = self._sfc_dict[target_sfc_idx]
-		# ”wŒiF
+		# èƒŒæ™¯è‰²
 		target_sfc.fill(self.__COLOR_BACKGROUND)
-		# ‹éŒ`
+		# çŸ©å½¢
 		sfc_rect = (self.__line_thick, self.__line_thick, \
 					target_sfc.get_width() - self.__line_thick*2, target_sfc.get_height() - self.__line_thick*2)
 		pygame.draw.rect(target_sfc, self.__COLOR_TEXT_BACKGROUND, sfc_rect)
-		# ƒeƒLƒXƒg
+		# ãƒ†ã‚­ã‚¹ãƒˆ
 		txt_msg = self._smallfont.render(txt_str, True, self.__COLOR_DEFAULT_TEXT)
 		txt_msg_rect = txt_msg.get_rect()
 		txt_msg_rect.center = (target_sfc.get_width()//2, target_sfc.get_height()//2)
 		target_sfc.blit(txt_msg, txt_msg_rect.topleft)
 	
-	##public## ƒQ[ƒ€‰æ–Ê‚ğ¶¬‚·‚é
+	##public## ã‚²ãƒ¼ãƒ ç”»é¢ã‚’ç”Ÿæˆã™ã‚‹
 	def draw_view(self):
 		
-		# ‹¤’ÊƒtƒB[ƒ‹ƒh‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		# å…±é€šãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 		self.__update_common_field_surface('common_field_area')
 		
-		# ŒÂlƒtƒB[ƒ‹ƒh‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		# å€‹äººãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 		self.__update_player_field_surface('player_field_area')
 		
-		# INFO—“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		# INFOæ¬„ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 		self.__update_info_surface('info_area')
 		
-		# drawƒ{ƒ^ƒ“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+		# drawãƒœã‚¿ãƒ³ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 		self.__update_button_surface('draw_button_area', '< Draw card >')
 		
-		# ƒQ[ƒ€I—¹‚Ì‚İ
+		# ã‚²ãƒ¼ãƒ çµ‚äº†æ™‚ã®ã¿
 		if self._game_model.get_game_end_flg():
-			# rematchƒ{ƒ^ƒ“‚ÌƒT[ƒtƒFƒCƒX‚ğÄ•`‰æ‚·‚é
+			# rematchãƒœã‚¿ãƒ³ã®ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’å†æç”»ã™ã‚‹
 			self.__update_button_surface('rematch_button_area', '< Start rematch >')
 		
-		# ‘S‘Ì‰æ–Ê‚Ö‚Ì“\‚è•t‚¯
+		# å…¨ä½“ç”»é¢ã¸ã®è²¼ã‚Šä»˜ã‘
 		self._blit_main_screen()
 
 
 ################################################################
-## ƒ†[ƒU‚©‚ç‚Ì“ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚éƒNƒ‰ƒX
+## ãƒ¦ãƒ¼ã‚¶ã‹ã‚‰ã®å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹ã‚¯ãƒ©ã‚¹
 ################################################################
 class UserEventControllerBozumekuri(ecb.EventControllerBase):
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^iƒI[ƒo[ƒ‰ƒCƒhj
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼ˆã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def __init__(self, gm_obj, sv_obj, sound_dict, tile_size):
 		super().__init__(gm_obj, sv_obj, sound_dict)
 		self._tile_size = tile_size
 	
-	##private## ƒJ[ƒhƒCƒxƒ“ƒg‚É‰‚¶‚½ƒGƒtƒFƒNƒg
+	##private## ã‚«ãƒ¼ãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆã«å¿œã˜ãŸã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
 	def __event_performance(self, event_result):
-		# ƒJ[ƒhƒCƒxƒ“ƒg‚ğó‚¯æ‚Á‚Ä‚¢‚éê‡‚Ì‚İ
+		# ã‚«ãƒ¼ãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘å–ã£ã¦ã„ã‚‹å ´åˆã®ã¿
 		if 'card_event' in event_result:
-			# ƒJ[ƒhƒ^ƒCƒv‚ªu“av‚Ìê‡
+			# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€Œæ®¿ã€ã®å ´åˆ
 			card_event = event_result['card_event']
 			if card_event == 'tono':
 				if type(self._sound_dict['tono']) is pygame.mixer.Sound:
 					self._sound_dict['tono'].play()
-					self._screen_view.draw_view()
-					pygame.display.update()
-					pygame.time.delay(1000)
-					
-			# ƒJ[ƒhƒ^ƒCƒv‚ªu•Pv‚Ìê‡
+			# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€Œå§«ã€ã®å ´åˆ
 			elif card_event == 'hime':
 				if type(self._sound_dict['hime']) is pygame.mixer.Sound:
 					self._sound_dict['hime'].play()
-					self._screen_view.draw_view()
-					pygame.display.update()
-					pygame.time.delay(1000)
-					
-			# ƒJ[ƒhƒ^ƒCƒv‚ªu–Våv‚Ìê‡
+			# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€ŒåŠä¸»ã€ã®å ´åˆ
 			elif card_event == 'bozu':
 				if type(self._sound_dict['bozu']) is pygame.mixer.Sound:
 					self._sound_dict['bozu'].play()
-					self._screen_view.draw_view()
-					pygame.display.update()
-					pygame.time.delay(1000)
-			# ƒJ[ƒhƒ^ƒCƒv‚ªu•s–¾v‚Ìê‡
+			# ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ãŒã€Œä¸æ˜ã€ã®å ´åˆ
 			else:
 				if type(self._sound_dict['invalid']) is pygame.mixer.Sound:
 					self._sound_dict['invalid'].play()
-					self._screen_view.draw_view()
-					pygame.display.update()
-					pygame.time.delay(1000)
+			# ä¸€å®šæ™‚é–“ã®ã‚¦ã‚§ã‚¤ãƒˆ
+			#self._screen_view.draw_view()
+			#pygame.display.update()
+			#pygame.time.delay(1000)
 	
-	##public## ƒ†[ƒU‚©‚ç‚Ì“ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚é
+	##public## ãƒ¦ãƒ¼ã‚¶ã‹ã‚‰ã®å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹
 	def control_event(self):
 		for event in pygame.event.get():
 			
-			# •Â‚¶‚éƒ{ƒ^ƒ“ƒNƒŠƒbƒN
+			# é–‰ã˜ã‚‹ãƒœã‚¿ãƒ³ã‚¯ãƒªãƒƒã‚¯
 			if event.type == QUIT:
 				pygame.quit()
 				sys.exit()
 			
-			# ¶ƒNƒŠƒbƒN
+			# å·¦ã‚¯ãƒªãƒƒã‚¯
 			if event.type == MOUSEBUTTONDOWN and event.button == 1:
-				# ƒNƒŠƒbƒNˆÊ’u‚ªƒ{[ƒh“à‚Ìê‡
+				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒå…±é€šãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰å†…ã®å ´åˆ
 				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['common_field_area']):
-					# ƒNƒŠƒbƒNˆÊ’u‚©‚çƒ^ƒCƒ‹À•W‚ğ“Á’è
-					pos_x = event.pos[0] // self._tile_size
-					pos_y = event.pos[1] // self._tile_size
-					pass
+					# æ¨æœ­ãƒˆãƒƒãƒ—ã‚«ãƒ¼ãƒ‰ã‚’INFOæ¬„è¡¨ç¤ºã‚«ãƒ¼ãƒ‰ã«è¨­å®š
+					graveyard_top_card = self._game_model.get_graveyard_cards().peep_card()
+					if graveyard_top_card != None:
+						self._screen_view.set_info_card(graveyard_top_card)
+						self._sound_dict['valid'].play()
 				
-				# ƒNƒŠƒbƒNˆÊ’u‚ªdrawƒ{ƒ^ƒ““à‚Ìê‡
+				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒå€‹äººãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰å†…ã®å ´åˆ
+				for i, target_rect in enumerate(self._screen_view._rect_dict['player_field_area']):
+					if self._validate_within_rect(event.pos, target_rect):
+						# æ‰‹æœ­ãƒˆãƒƒãƒ—ã‚«ãƒ¼ãƒ‰ã‚’INFOæ¬„è¡¨ç¤ºã‚«ãƒ¼ãƒ‰ã«è¨­å®š
+						hand_top_card = self._game_model.get_player_hands(i).peep_card()
+						if hand_top_card != None:
+							self._screen_view.set_info_card(hand_top_card)
+							self._sound_dict['valid'].play()
+				
+				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒdrawãƒœã‚¿ãƒ³å†…ã®å ´åˆ
 				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['draw_button_area']):
-					# ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FRD‚©‚ç1–‡ˆø‚­
+					# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šå±±æœ­ã‹ã‚‰1æšå¼•ã
 					action_result = self._game_model.action_draw_card()
 					self._output_reaction(action_result)
 					self.__event_performance(action_result)
 				
-				# ƒNƒŠƒbƒNˆÊ’u‚ªrematchƒ{ƒ^ƒ““à‚Ìê‡
+				# ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒrematchãƒœã‚¿ãƒ³å†…ã®å ´åˆ
 				if self._validate_within_rect(event.pos, self._screen_view._rect_dict['rematch_button_area']):
-					# Šû•ˆ‚ğƒtƒ@ƒCƒ‹o—Í‚·‚é
+					# æ£‹è­œã‚’ãƒ•ã‚¡ã‚¤ãƒ«å‡ºåŠ›ã™ã‚‹
 					#self._write_game_record()
-					# ƒvƒŒƒCƒ„[ƒAƒNƒVƒ‡ƒ“FÄí‚·‚é
+					# ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼šå†æˆ¦ã™ã‚‹
 					action_result = self._game_model.action_start_rematch()
 					self._output_reaction(action_result)
 
 
 ################################################################
-## CPU‚©‚ç‚Ì“ü—Í‚ğó‚¯•t‚¯‚éƒNƒ‰ƒX
+## CPUã‹ã‚‰ã®å…¥åŠ›ã‚’å—ã‘ä»˜ã‘ã‚‹ã‚¯ãƒ©ã‚¹
 ################################################################
 class CpuEventControllerBozumekuri(ecb.EventControllerBase):
 	
-	##public## CPU‚©‚ç‚Ì“ü—ÍƒCƒxƒ“ƒg‚ğó‚¯•t‚¯‚é
+	##public## CPUã‹ã‚‰ã®å…¥åŠ›ã‚¤ãƒ™ãƒ³ãƒˆã‚’å—ã‘ä»˜ã‘ã‚‹
 	def control_event(self):
 		
-		# ƒQ[ƒ€I—¹ƒtƒ‰ƒO‚ªOFF‚Ìê‡
+		# ã‚²ãƒ¼ãƒ çµ‚äº†ãƒ•ãƒ©ã‚°ãŒOFFã®å ´åˆ
 		if self._game_model.get_game_end_flg() == False:
-			# RD‚©‚ç1–‡ˆø‚­
+			# å±±æœ­ã‹ã‚‰1æšå¼•ã
 			action_result = self._game_model.action_draw_card()
 			if type(self._sound_dict['valid']) is pygame.mixer.Sound:
 				self._sound_dict['valid'].play()

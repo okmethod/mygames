@@ -2,138 +2,171 @@ import copy
 import random
 
 ################################################################
-## ƒJ[ƒh1–‡‚ğ•\‚·ƒNƒ‰ƒXiŠî’êƒNƒ‰ƒXj
+## ã‚«ãƒ¼ãƒ‰1æšã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹ï¼ˆåŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
 ################################################################
 class Card:
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	def __init__(self, spec):
-		self._id               = spec[0]
-		self._name             = spec[1]
-		self._type             = spec[2]
-		self._description      = spec[3]
-		self._image_front_side = spec[4]
-		self._image_back_side  = spec[5]
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	def __init__(self, card_spec):
+		self._id            = card_spec['id']
+		self._name          = card_spec['name']
+		self._type          = card_spec['type']
+		self._description   = card_spec['description']
+		self._image_size_w  = card_spec['image_size_w']
+		self._image_size_h  = card_spec['image_size_h']
+		self._image_format  = card_spec['image_format']
+		self._image_front   = card_spec['image_front']
+		self._image_back    = card_spec['image_back']
+		self._faceup_flg    = False
+		self._tap_flg       = False
 	
-	##public## ƒJ[ƒhid‚ğæ“¾‚·‚é
-	def get_card_id(self):
+	##public## ã‚«ãƒ¼ãƒ‰idã‚’å–å¾—ã™ã‚‹
+	def get_id(self):
 		return self._id
 	
-	##public## ƒJ[ƒh–¼‚ğæ“¾‚·‚é
-	def get_card_name(self):
+	##public## ã‚«ãƒ¼ãƒ‰åã‚’å–å¾—ã™ã‚‹
+	def get_name(self):
 		return self._name
 	
-	##public## ƒJ[ƒhƒ^ƒCƒv‚ğæ“¾‚·‚é
-	def get_card_type(self):
+	##public## ã‚«ãƒ¼ãƒ‰ã‚¿ã‚¤ãƒ—ã‚’å–å¾—ã™ã‚‹
+	def get_type(self):
 		return self._type
 	
-	##public## ƒJ[ƒh‚Ìà–¾‚ğæ“¾‚·‚é
-	def get_card_description(self):
+	##public## ã‚«ãƒ¼ãƒ‰ã®èª¬æ˜ã‚’å–å¾—ã™ã‚‹
+	def get_description(self):
 		return self._description
 	
-	##public## ƒJ[ƒh•\–Ê‰æ‘œ‚ğæ“¾‚·‚é
-	def get_card_image_front_side(self):
-		return self._image_front_side
+	##public## ã‚«ãƒ¼ãƒ‰ç”»åƒã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹
+	def get_image_size(self):
+		return (self._image_size_w, self._image_size_h)
 	
-	##public## ƒJ[ƒh— –Ê‰æ‘œ‚ğæ“¾‚·‚é
-	def get_card_image_back_side(self):
-		return self._image_back_side
+	##public## ã‚«ãƒ¼ãƒ‰ç”»åƒãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã‚’å–å¾—ã™ã‚‹
+	def get_image_format(self):
+		return self._image_format
+	
+	##public## ã‚«ãƒ¼ãƒ‰è¡¨é¢ç”»åƒãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹
+	def get_image_front(self):
+		return self._image_front
+	
+	##public## ã‚«ãƒ¼ãƒ‰è£é¢ç”»åƒãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹
+	def get_image_back(self):
+		return self._image_back
+	
+	##public## ã‚«ãƒ¼ãƒ‰ã®çŠ¶æ…‹(è¡¨å‘ã/è£å‘ã)ã‚’å–å¾—ã™ã‚‹
+	def is_faceup(self):
+		return self._faceup_flg
+	
+	##public## ã‚«ãƒ¼ãƒ‰ã®çŠ¶æ…‹(ã‚¿ãƒƒãƒ—/ã‚¢ãƒ³ã‚¿ãƒƒãƒ—)ã‚’å–å¾—ã™ã‚‹
+	def is_tap(self):
+		return self._tap_flg
+	
+	##public## ã‚«ãƒ¼ãƒ‰ã®çŠ¶æ…‹(è¡¨å‘ã/è£å‘ã)ã‚’æ›´æ–°ã™ã‚‹
+	def set_face_state(self, b=None):
+		if b == None:
+			if self._faceup_flg:
+				self._faceup_flg = False
+			else:
+				self._faceup_flg = True
+		else:
+			self._faceup_flg = bool(b)
+	
+	##public## ã‚«ãƒ¼ãƒ‰ã®çŠ¶æ…‹(ã‚¿ãƒƒãƒ—/ã‚¢ãƒ³ã‚¿ãƒƒãƒ—)ã‚’æ›´æ–°ã™ã‚‹
+	def set_tap_state(self, bool=None):
+		if b == None:
+			if self._tap_flg:
+				self._tap_flg = False
+			else:
+				self._tap_flg = True
+		else:
+			self._tap_flg = bool(b)
+	
 
 
 ################################################################
-## ƒJ[ƒhƒ}ƒXƒ^‚ğ•\‚·ƒNƒ‰ƒXiŠî’êƒNƒ‰ƒXj
-################################################################
-class CardMaster:
-
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	def __init__(self, CardClassObj, spec_list):
-		self._card_master = []
-		self.__generate_card_master(CardClassObj, spec_list)
-	
-	##private## ƒJ[ƒh‚Ìspec’è‹`”z—ñ‚©‚çAƒJ[ƒhƒ}ƒXƒ^iCardƒIƒuƒWƒFƒNƒg”z—ñj‚ğ¶¬‚·‚é
-	def __generate_card_master(self, CardClassObj, spec_list):
-		for spec in spec_list:
-			card = CardClassObj(spec)
-			self._card_master.append(card)
-	
-	##public## ƒJ[ƒhƒ}ƒXƒ^‚ğŒŸõ‚µACardƒIƒuƒWƒFƒNƒg‚ğ•Ô‹p‚·‚é
-	def pickup_card(self, id):
-		for card in self._card_master:
-			if card.get_card_id() == id:
-				return card
-		return None
-
-
-################################################################
-## ƒJ[ƒhƒfƒbƒLi‘©j‚ğ•\‚·ƒNƒ‰ƒXiŠî’êƒNƒ‰ƒXj
+## ã‚«ãƒ¼ãƒ‰ãƒ‡ãƒƒã‚­ï¼ˆã‚«ãƒ¼ãƒ‰ã®æŸï¼‰ã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹ï¼ˆåŸºåº•ã‚¯ãƒ©ã‚¹ï¼‰
 ################################################################
 class CardDeck:
 	
-	##MEMO## 0¨NF— –Ê¨•\–Ê
+	##MEMO## 0ï¼šãƒ‡ãƒƒã‚­ãƒœãƒˆãƒ ã€Nï¼šãƒ‡ãƒƒã‚­ãƒˆãƒƒãƒ—
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	def __init__(self, card_master=None, deck_recipe=None):
-		self._card_deck = []
-		self.__generate_card_deck(card_master, deck_recipe)
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	def __init__(self, CardClassObj, card_catalog=None, deck_recipe=None):
+		self._card_list = []
+		self.__generate_card_deck(CardClassObj, card_catalog, deck_recipe)
 	
-	##private## ƒJ[ƒhƒ}ƒXƒ^‚ÆƒfƒbƒLƒŒƒVƒs‚©‚çƒJ[ƒhƒfƒbƒL‚ğ¶¬‚·‚é
-	def __generate_card_deck(self, card_master=None, deck_recipe=None):
-		# ƒfƒbƒLƒŒƒVƒs‚©‚çƒJ[ƒhƒŠƒXƒg‚ğì¬‚µAƒfƒbƒL‚É‰Á‚¦‚é
-		self._card_deck = []
+	##private## ã‚«ãƒ¼ãƒ‰ã‚«ã‚¿ãƒ­ã‚°ã¨ãƒ‡ãƒƒã‚­ãƒ¬ã‚·ãƒ”ã‹ã‚‰ã‚«ãƒ¼ãƒ‰ãƒ‡ãƒƒã‚­ã‚’ç”Ÿæˆã™ã‚‹
+	def __generate_card_deck(self, CardClassObj, card_catalog=None, deck_recipe=None):
+		# ãƒ‡ãƒƒã‚­ãƒ¬ã‚·ãƒ”ã‹ã‚‰ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã‚’ä½œæˆã—ã€ãƒ‡ãƒƒã‚­ã«åŠ ãˆã‚‹
+		self._card_list = []
 		card_list = []
-		# ƒJ[ƒhƒ}ƒXƒ^‚ÆƒfƒbƒLƒŒƒVƒs‚Ìw’è—L‚è‚Ìê‡
-		if (card_master != None) and (deck_recipe != None):
-			for parts in deck_recipe:
-				card_id      = parts[0]
-				num_of_cards = parts[1]
-				# ƒJ[ƒhƒ}ƒXƒ^‚ğŒŸõ‚µ‚ÄCardƒIƒuƒWƒFƒNƒg‚ğæ“¾‚·‚é
-				card_obj = card_master.pickup_card(card_id)
-				# w’è‚³‚ê‚½–‡”‚Ô‚ñACardƒIƒuƒWƒFƒNƒg‚Ì[‚¢ƒRƒs[‚ğ’Ç‰Á‚·‚é
+		# ã‚«ãƒ¼ãƒ‰ã‚«ã‚¿ãƒ­ã‚°ã¨ãƒ‡ãƒƒã‚­ãƒ¬ã‚·ãƒ”ã®æŒ‡å®šæœ‰ã‚Šã®å ´åˆ
+		if (card_catalog != None) and (deck_recipe != None):
+			for deck_parts in deck_recipe:
+				card_id      = deck_parts[0]
+				num_of_cards = deck_parts[1]
+				# ã‚«ãƒ¼ãƒ‰ã‚«ã‚¿ãƒ­ã‚°ã‚’æ¤œç´¢ã—ã€å¯¾è±¡ã‚«ãƒ¼ãƒ‰æƒ…å ±ã‚’å–å¾—ã™ã‚‹
+				for s in card_catalog:
+					if s['id'] == card_id:
+						card_spec = s
+				# æŒ‡å®šã•ã‚ŒãŸæšæ•°ã¶ã‚“ã€Cardã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’è¿½åŠ ã™ã‚‹
 				for n in range(num_of_cards):
-					card_list.append(copy.deepcopy(card_obj))
+					card_list.append(CardClassObj(copy.deepcopy(card_spec)))
 			self.push_card(card_list)
 	
-	##public## ƒJ[ƒhƒŠƒXƒg‚ğæ“¾‚·‚é
+	##public## ã‚«ãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã‚’å–å¾—ã™ã‚‹
 	def get_card_deck(self):
-		return self._card_deck
+		return self._card_list
 	
-	##public## ƒJ[ƒh–‡”‚ğæ“¾‚·‚é
+	##public## ã‚«ãƒ¼ãƒ‰æšæ•°ã‚’å–å¾—ã™ã‚‹
 	def get_number_of_cards(self):
-		return len(self._card_deck)
+		return len(self._card_list)
 	
-	##public## ƒJ[ƒh–‡”‚ğæ“¾‚·‚éi•Ê–¼j
+	##public## ã‚«ãƒ¼ãƒ‰æšæ•°ã‚’å–å¾—ã™ã‚‹ï¼ˆåˆ¥åï¼‰
 	def get_len(self):
 		return self.get_number_of_cards()
 	
-	##public## ƒJ[ƒhƒfƒbƒL‚ğƒVƒƒƒbƒtƒ‹‚·‚é
+	##public## ã‚«ãƒ¼ãƒ‰ãƒ‡ãƒƒã‚­ã‚’ã‚·ãƒ£ãƒƒãƒ•ãƒ«ã™ã‚‹
 	def shuffle_cards(self):
-		random.shuffle(self._card_deck)
+		random.shuffle(self._card_list)
 	
-	##public## w’èˆÊ’u‚©‚çƒJ[ƒh1–‡‚ğpop‚·‚é
-	def pop_card(self, idx=None):
-		# ƒfƒbƒL‚ÉƒJ[ƒh‚ª‚ ‚éê‡
-		if len(self._card_deck) > 0:
-			# idxw’è–³‚µ‚Ìê‡
+	##public## æŒ‡å®šä½ç½®ã®ã‚«ãƒ¼ãƒ‰1æšã‚’å‚ç…§ã™ã‚‹
+	def peep_card(self, idx=None):
+		# ãƒ‡ãƒƒã‚­ã«ã‚«ãƒ¼ãƒ‰ãŒã‚ã‚‹å ´åˆ
+		if len(self._card_list) > 0:
+			# idxæŒ‡å®šç„¡ã—ã®å ´åˆã€ãƒ‡ãƒƒã‚­ãƒˆãƒƒãƒ—
 			if idx == None:
-				return self._card_deck.pop()
-			# idxw’è—L‚è‚Ìê‡
+				return self._card_list[len(self._card_list) - 1]
+			# idxæŒ‡å®šæœ‰ã‚Šã®å ´åˆ
 			else:
-				return self._card_deck.pop(idx)
+				return self._card_list[idx]
 		else:
 			return None
 	
-	##public## w’èˆÊ’u‚ÉƒJ[ƒh‚ğpush‚·‚é
+	##public## æŒ‡å®šä½ç½®ã‹ã‚‰ã‚«ãƒ¼ãƒ‰1æšã‚’popã™ã‚‹
+	def pop_card(self, idx=None):
+		# ãƒ‡ãƒƒã‚­ã«ã‚«ãƒ¼ãƒ‰ãŒã‚ã‚‹å ´åˆ
+		if len(self._card_list) > 0:
+			# idxæŒ‡å®šç„¡ã—ã®å ´åˆã€ãƒ‡ãƒƒã‚­ãƒˆãƒƒãƒ—
+			if idx == None:
+				return self._card_list.pop()
+			# idxæŒ‡å®šæœ‰ã‚Šã®å ´åˆ
+			else:
+				return self._card_list.pop(idx)
+		else:
+			return None
+	
+	##public## æŒ‡å®šä½ç½®ã«ã‚«ãƒ¼ãƒ‰ã‚’pushã™ã‚‹
 	def push_card(self, cards, idx=None):
-		# idxw’è–³‚µ‚Ìê‡
+		# idxæŒ‡å®šç„¡ã—ã®å ´åˆã€ãƒ‡ãƒƒã‚­ãƒˆãƒƒãƒ—
 		if idx == None:
 			if type(cards) is list:
-				self._card_deck.extend(cards)
+				self._card_list.extend(cards)
 			else:
-				self._card_deck.append(cards)
-		# idxw’è—L‚è‚Ìê‡
+				self._card_list.append(cards)
+		# idxæŒ‡å®šæœ‰ã‚Šã®å ´åˆã€æŒ‡å®šä½ç½®
 		else:
 			if type(cards) is list:
-				self._card_deck[idx:idx] = cards
+				self._card_list[idx:idx] = cards
 			else:
-				self._card_deck.insert(idx, cards)
+				self._card_list.insert(idx, cards)
 

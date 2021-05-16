@@ -1,19 +1,19 @@
 import pygame
 
 ################################################################
-## pygame‚É‚æ‚Á‚ÄƒQ[ƒ€‰æ–Ê‚ğ•`‰æ‚·‚éƒNƒ‰ƒX
+## pygameã«ã‚ˆã£ã¦ã‚²ãƒ¼ãƒ ç”»é¢ã‚’æç”»ã™ã‚‹ã‚¯ãƒ©ã‚¹
 ################################################################
 class ScreenViewBase:
 	
-	##private## ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	def __init__(self, gm_obj, main_screen_rect, rect_dict, font_size):
-		# GameModelƒIƒuƒWƒFƒNƒg
+	##private## ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	def __init__(self, gm_obj, main_screen_rect, rect_dict, font_size, ):
+		# GameModelã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 		self._game_model  = gm_obj
-		# ƒƒCƒ“‰æ–Ê‚ğ•Û‚·‚éƒIƒuƒWƒFƒNƒg
+		# ãƒ¡ã‚¤ãƒ³ç”»é¢ã‚’ä¿æŒã™ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 		self._main_screen = pygame.display.set_mode(main_screen_rect.size)
-		# ŠeƒT[ƒtƒFƒCƒX‚Ì•`‰æˆÊ’u‚ğ•Û‚·‚éƒfƒBƒNƒVƒ‡ƒiƒŠ
+		# å„ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã®æç”»ä½ç½®ã‚’ä¿æŒã™ã‚‹ãƒ‡ã‚£ã‚¯ã‚·ãƒ§ãƒŠãƒª
 		self._rect_dict   = rect_dict
-		# ŠeƒT[ƒtƒFƒCƒX‚ğ•Û‚·‚éƒfƒBƒNƒVƒ‡ƒiƒŠ
+		# å„ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã‚’ä¿æŒã™ã‚‹ãƒ‡ã‚£ã‚¯ã‚·ãƒ§ãƒŠãƒª
 		self._sfc_dict    = {}
 		for k in rect_dict.keys():
 			if type(rect_dict[k]) is list:
@@ -26,11 +26,11 @@ class ScreenViewBase:
 					self._sfc_dict[k][sub_k] = pygame.Surface(rect_dict[k][sub_k].size)
 			else:
 				self._sfc_dict[k] = pygame.Surface(rect_dict[k].size)
-		# ƒtƒHƒ“ƒgƒIƒuƒWƒFƒNƒg
-		self._smallfont   = pygame.font.SysFont(None, font_size)
-		self._largefont   = pygame.font.SysFont(None, font_size * 2)
+		# ãƒ•ã‚©ãƒ³ãƒˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+		self._smallfont   = pygame.font.SysFont('yugothicmediumyugothicuiregular', font_size)
+		self._largefont   = pygame.font.SysFont('yugothicmediumyugothicuiregular', font_size * 2)
 	
-	##private## “à•”ƒƒ\ƒbƒhF‘S‘Ì‰æ–Ê‚Ö‚ÌŠeƒT[ƒtƒFƒCƒX‚Ì“\‚è•t‚¯
+	##private## å†…éƒ¨ãƒ¡ã‚½ãƒƒãƒ‰ï¼šå…¨ä½“ç”»é¢ã¸ã®å„ã‚µãƒ¼ãƒ•ã‚§ã‚¤ã‚¹ã®è²¼ã‚Šä»˜ã‘
 	def _blit_main_screen(self):
 		for k in self._sfc_dict.keys():
 			if type(self._sfc_dict[k]) is list:
@@ -43,7 +43,7 @@ class ScreenViewBase:
 				self._main_screen.blit(self._sfc_dict[k], self._rect_dict[k])
 			
 	
-	##public## ƒQ[ƒ€‰æ–Ê‚ğ¶¬‚·‚éi—vƒI[ƒo[ƒ‰ƒCƒhj
+	##public## ã‚²ãƒ¼ãƒ ç”»é¢ã‚’ç”Ÿæˆã™ã‚‹ï¼ˆè¦ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ï¼‰
 	def draw_view(self):
 		pass
 
