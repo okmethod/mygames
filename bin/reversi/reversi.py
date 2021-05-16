@@ -8,9 +8,6 @@ import reversi_conf as conf
 import reversi_mvc  as mvc
 import MediaDataControl as media
 
-# mediaファイルのパス
-MEDIA_SOUND_DIRPATH = '../../media/wav'
-MEDIA_IMAGE_DIRPATH = '../../media/png'
 
 ################################################################
 ## メイン関数
@@ -25,13 +22,13 @@ def main():
 	
 	# 音声ファイルのロード
 	sound_dict = {}
-	sound_dict['valid']   = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_VALID).get_data()
-	sound_dict['invalid'] = media.SoundData(MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_INVALID).get_data()
+	sound_dict['valid']   = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_VALID).get_data()
+	sound_dict['invalid'] = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_INVALID).get_data()
 	
 	# 画像ファイルのロード
 	image_dict = {}
-	image_dict['player1'] = media.ImageData(MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_PLAYER1).get_resized_data((conf.TILE_SIZE,conf.TILE_SIZE))
-	image_dict['player2'] = media.ImageData(MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_PLAYER2).get_resized_data((conf.TILE_SIZE,conf.TILE_SIZE))
+	image_dict['player1'] = media.ImageData(conf.PNG_DIRPATH, conf.IMAGE_FILEPATH_PLAYER1).get_resized_data((conf.TILE_SIZE,conf.TILE_SIZE))
+	image_dict['player2'] = media.ImageData(conf.PNG_DIRPATH, conf.IMAGE_FILEPATH_PLAYER2).get_resized_data((conf.TILE_SIZE,conf.TILE_SIZE))
 	
 	# プレイヤーの定義
 	player_list = []

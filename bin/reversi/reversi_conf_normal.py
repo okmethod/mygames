@@ -19,8 +19,10 @@ PLAYER2_NAME  = 'White'
 PLAYER2_COLOR = (255, 255, 255)
 
 # 読み込みファイルパス
+WAV_DIRPATH            = '../../media/wav'
 WAV_FILENAME_VALID     = 'Windows Navigation Start.wav'
 WAV_FILENAME_INVALID   = 'Windows Critical Stop.wav'
+PNG_DIRPATH            = '../../media/png'
 IMAGE_FILEPATH_PLAYER1 = None # 画像を使用しない場合はNoneを設定
 IMAGE_FILEPATH_PLAYER2 = None # 画像を使用しない場合はNoneを設定
 

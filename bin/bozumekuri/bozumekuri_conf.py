@@ -32,14 +32,14 @@ PLAYER4_COLOR = (192, 192, 192)
 # 読み込みファイルパス
 CARD_CATALOG_FILENAME = './hundred_poems.csv'
 
-MEDIA_SOUND_DIRPATH   = '../../media/wav'
-WAV_FILENAME_VALID    = 'Windows Navigation Start.wav'
-WAV_FILENAME_INVALID  = 'Windows Critical Stop.wav'
-WAV_FILENAME_TONO     = 'Windows Pop-up Blocked.wav'
-WAV_FILENAME_HIME     = 'Windows Logon_trimed.wav'
-WAV_FILENAME_BOZU     = 'Windows Recycle.wav'
+WAV_DIRPATH          = '../../media/wav'
+WAV_FILENAME_VALID   = 'Windows Navigation Start.wav'
+WAV_FILENAME_INVALID = 'Windows Critical Stop.wav'
+WAV_FILENAME_TONO    = 'Windows Pop-up Blocked.wav'
+WAV_FILENAME_HIME    = 'Windows Logon_trimed.wav'
+WAV_FILENAME_BOZU    = 'Windows Recycle.wav'
 
-MEDIA_IMAGE_DIRPATH      = '../../media/png'
+PNG_DIRPATH              = '../../media/png'
 IMAGE_FILEPATH_CARD_BACK = 'card-wafu.png'
 IMAGE_FILEPATH_CARD_TONO = 'tono.png'
 IMAGE_FILEPATH_CARD_HIME = 'hime.png'

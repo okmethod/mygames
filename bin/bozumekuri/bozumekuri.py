@@ -23,18 +23,18 @@ def main():
 	
 	# 音声ファイルのロード
 	sound_dict = {}
-	sound_dict['valid']   = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_VALID).get_data()
-	sound_dict['invalid'] = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_INVALID).get_data()
-	sound_dict['tono']    = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_TONO).get_data()
-	sound_dict['hime']    = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_HIME).get_data()
-	sound_dict['bozu']    = media.SoundData(conf.MEDIA_SOUND_DIRPATH, conf.WAV_FILENAME_BOZU).get_data()
+	sound_dict['valid']   = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_VALID).get_data()
+	sound_dict['invalid'] = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_INVALID).get_data()
+	sound_dict['tono']    = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_TONO).get_data()
+	sound_dict['hime']    = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_HIME).get_data()
+	sound_dict['bozu']    = media.SoundData(conf.WAV_DIRPATH, conf.WAV_FILENAME_BOZU).get_data()
 	
 	# 画像ファイルのロード
 	image_dict = {}
-	image_dict['back'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_BACK).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
-	image_dict['tono'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_TONO).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
-	image_dict['hime'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_HIME).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
-	image_dict['bozu'] = media.ImageData(conf.MEDIA_IMAGE_DIRPATH, conf.IMAGE_FILEPATH_CARD_BOZU).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['back'] = media.ImageData(conf.PNG_DIRPATH, conf.IMAGE_FILEPATH_CARD_BACK).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['tono'] = media.ImageData(conf.PNG_DIRPATH, conf.IMAGE_FILEPATH_CARD_TONO).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['hime'] = media.ImageData(conf.PNG_DIRPATH, conf.IMAGE_FILEPATH_CARD_HIME).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
+	image_dict['bozu'] = media.ImageData(conf.PNG_DIRPATH, conf.IMAGE_FILEPATH_CARD_BOZU).to_string((conf.CARD_SIZE_W, conf.CARD_SIZE_H), 'RGBA')
 	
 	# プレイヤーの定義
 	player_list = []
