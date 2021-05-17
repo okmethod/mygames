@@ -1,4 +1,4 @@
-# git登録対象外ファイル
+# git逋ｻ骭ｲ蟇ｾ雎｡螟悶ヵ繧｡繧､繝ｫ
 bin/*/*.bat
 bin/*/__pycache__/*.pyc
 lib/*/__pycache__/*.pyc
